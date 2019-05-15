@@ -1,0 +1,22 @@
+/*
+ * CSS rules for visualization.
+ * Class namespacing is good practice.
+ */
+.single_value_viz-container {
+    position: relative; 
+}
+.single_value_viz-overlay {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+    position: absolute;
+    z-index: 3;
+}
+.single_value_viz-wrap_areachart,
+.single_value_viz-wrap_gauge {
+    position: absolute;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
