@@ -25,7 +25,7 @@
                         <option value="b1">Box 1</option>
                         <option value="b2">Box 2</option>
                         <option value="c1">Circle 1</option><!-- Cutout percentage 80 - full ring is the color of the value -->
-                        <option value="c1">Circle 2</option><!-- Filled circle -->
+                        <option value="c2">Circle 2</option><!-- Filled circle -->
                         <option value="c3">Hexagon 1</option>
                 </splunk-select>
         </splunk-control-group>
@@ -82,6 +82,15 @@
                         <splunk-color>#5C6773</splunk-color>
                 </splunk-color-picker>
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdval6" value="" style="width: 80px; vertical-align:top; display:inline-block; flex: none; margin-left: 26px;"></splunk-text-input>
+        </splunk-control-group>
+
+        <splunk-control-group label="No-data color">
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.nodatacolor" value="#5C6773" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                        <splunk-color>#ffffff</splunk-color>
+                        <splunk-color>#000000</splunk-color>
+                </splunk-color-picker>
         </splunk-control-group>
 
         <splunk-control-group label="Shadow color">
@@ -155,13 +164,44 @@
 
 <form class="splunk-formatter-section" section-label="Overlay">
 
-        <splunk-control-group label="Scale" help="Leave blank to auto-fit">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.textsize" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        <splunk-control-group label="Size scale">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.textsize" value="100" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
         
-        <splunk-control-group label="Animation time" help="Set 0 to disable">
+        <splunk-control-group label="Animation time" help="Precision must be specified for animation. Set 0 to disable. ">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.textduration" value="300" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">ms</span>
+        </splunk-control-group>
+
+        <splunk-control-group label="Precision">
+                <splunk-select name="{{VIZ_NAMESPACE}}.textprecision" value="nolimit">
+                        <option value="nolimit">Not set</option>
+                        <option value="1">0</option>
+                        <option value="2">0.0</option>
+                        <option value="3">0.00</option>
+                        <option value="4">0.000</option>
+                        <option value="5">0.0000</option>
+                        <option value="6">0.00000</option>
+                </splunk-select>
+        </splunk-control-group>
+
+        <splunk-control-group label="Add thousands seperators">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textthousands" value="no">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                </splunk-radio-input>
+        </splunk-control-group>
+
+        <splunk-control-group label="Unit">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.textunit" value=""></splunk-text-input>
+        </splunk-control-group>
+
+        <splunk-control-group label="Unit position">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textunitposition" value="after">
+                        <option value="before">Before</option>
+                        <option value="after">After</option>
+                </splunk-radio-input>
         </splunk-control-group>
 
         <splunk-control-group label="Font">
@@ -174,10 +214,28 @@
 </form>
 
 
-<form class="splunk-formatter-section" section-label="Help">
-	<splunk-control-group label=" ">
-        <div style="margin:40px 10px 40px 0;">
-            <a href="/app/spinner_viz/documentation" target="_blank">Examples and Documentation</a>
+<form class="splunk-formatter-section" section-label="Advanced">
+        <splunk-control-group label=" ">
+        <div style="font-weight:bold">
+                Spinners
         </div>
-	</splunk-control-group>
+        </splunk-control-group>
+        <splunk-control-group label="Duration at min">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmin" value="10" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
+        </splunk-control-group>
+        <splunk-control-group label="Duration at max">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmax" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
+        </splunk-control-group>
+
+</form>
+
+
+<form class="splunk-formatter-section" section-label="Help">
+        <splunk-control-group label=" ">
+        <div style="margin:40px 10px 40px 0;">
+                <a href="/app/spinner_viz/documentation" target="_blank">Examples and Documentation</a>
+        </div>
+        </splunk-control-group>
 </form>

@@ -65,8 +65,16 @@ function(
                 thresholdval5: "",
                 thresholdval6: "",
                 shadowcolor: "",
+                nodatacolor: "#5C6773",
                 bordercolor: "#ffffff",
                 bordersize: "2",
+                textsize: "100",
+                textduration: "300",
+                textprecision: "nolimit",
+                textthousands: "no",
+                textunit: "",
+                textunitposition: "after",
+                font: "bold",
 
                 base_obj: "donut",
                 doSvg: "",
@@ -211,7 +219,7 @@ function(
                     } else if (viz.config.style === "s2") {
 
                         // From https://loading.io/spinner/recycle/-recycle-spinner
-                        viz.$svg = $('<svg width="95%" height="95%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
+                        viz.$svg = $('<svg width="95%" height="95%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-6 0 106 100" preserveAspectRatio="xMidYMid">'+
                         '<g transform="translate(50,50)">'+
                         '<g transform="scale(1.0888888888888888)">'+
                         '<g transform="translate(-50,-50)">'+
@@ -356,7 +364,7 @@ function(
                 center: {"margin-left": (viz.size / 2 * -1) + "px"},
                 right: {"margin-left": (viz.size * 0.05) + "px", "text-align": "left"}
             }
-            viz.overlay.css({"font-size": (viz.size * 0.2) + "px", "margin-top": (viz.size * viz.config.overlayHeight) + "px", "width": viz.size, "left": "50%"}).css(overlayPosition[viz.config.overlayPosition]);
+            viz.overlay.css({"font-size": (viz.size * 0.2 * (Number(viz.config.textsize) / 100)) + "px", "margin-top": (viz.size * viz.config.overlayHeight) + "px", "width": viz.size, "left": "50%"}).css(overlayPosition[viz.config.overlayPosition]);
 
             if (doAFullRedraw) {
                 if (viz.config.base_obj === "donut") {
@@ -485,17 +493,14 @@ function(
             var threshold_colors = [];
             var threshold_values = [];
             var thresholds_arr = [];
-// TODO fix this so thresholds are not constrained by data limits
-            viz.config.thresholdval1 = viz.config.min;
-            for (i = 1; i < 7; i++){
+            //viz.config.thresholdval1 = viz.config.min;
+            for (i = 2; i < 7; i++){
                 if (viz.config["thresholdval" + i] !== "" && ! isNaN(Number(viz.config["thresholdval" + i]))) {
                     var val = Number(viz.config["thresholdval" + i]);
-                    if (val >= viz.config.min && val <= viz.config.max) {
-                        thresholds_arr.push({
-                            color: viz.config["thresholdcol" + i], 
-                            value: val
-                        });
-                    }
+                    thresholds_arr.push({
+                        color: viz.config["thresholdcol" + i], 
+                        value: val
+                    });
                 }
             }
             thresholds_arr.sort(function(a, b) {
@@ -506,19 +511,18 @@ function(
                 return 0;
             });
             for (i = 0; i < thresholds_arr.length; i++){
-                if ((i+1) === thresholds_arr.length) {
-                    threshold_colors.push(thresholds_arr[i].color);
-                    threshold_values.push(viz.config.max - thresholds_arr[i].value);
-                } else {
-                    threshold_colors.push(thresholds_arr[i].color);
-                    threshold_values.push(thresholds_arr[i+1].value - thresholds_arr[i].value);
+                if (thresholds_arr[i].value >= viz.config.min && thresholds_arr[i].value <= viz.config.max) {
+                    if ((i+1) === thresholds_arr.length) {
+                        threshold_colors.push(thresholds_arr[i].color);
+                        threshold_values.push(viz.config.max - thresholds_arr[i].value);
+                    } else {
+                        threshold_colors.push(thresholds_arr[i].color);
+                        threshold_values.push(thresholds_arr[i+1].value - thresholds_arr[i].value);
+                    }
                 }
             }
-            //console.log(data,config);
             var ignoreField = -1;
             var colors = viz.colors;
-
-            // TODO make sure the data is valid
             var foundNumeric = true;
             var overtimedata = [];
             var value;
@@ -548,17 +552,20 @@ function(
                 console.log(overtimedata, value);
 
                 var value_display = "";
-                var value_color;
+                var value_color = viz.config.nodatacolor;
                 var value_lowerseg = 0;
                 var value_upperseg = 0;
+                var value_nodata = false;
                 var value_as_percentage = 0;
                 if (value === "") {
                     value_display = "";
                     value = viz.config.min;
+                    value_nodata = true;
 
                 } else if (isNaN(Number(value))) {
                     value_display = "-";
                     value = viz.config.min;
+                    value_nodata = true;
 
                 } else {
                     value = Number(value);
@@ -566,6 +573,7 @@ function(
                     // limit to bounds
                     value = Math.min(Math.max(value, viz.config.min), viz.config.max);
                     // find the colour of the value
+                    var value_color = viz.config.thresholdcol1;
                     for (i = 0; i < thresholds_arr.length; i++){
                         if (value > thresholds_arr[i].value) {
                             value_color = thresholds_arr[i].color;
@@ -600,12 +608,9 @@ function(
                 } else if (viz.config.base_obj === "svg") {
                     // Calculate the speed of the viz
                     var speed = "999999";
-                    if (viz.config.spinnerspeedmax > viz.config.spinnerspeedmin) {
-                        speed = value_as_percentage * (viz.config.spinnerspeedmax - viz.config.spinnerspeedmin) + viz.config.spinnerspeedmin;
-                    } else {
-                        speed = viz.config.spinnerspeedmin - (value_as_percentage * (viz.config.spinnerspeedmin - viz.config.spinnerspeedmax) + viz.config.spinnerspeedmax);
+                    if (! value_nodata) {
+                        speed = (value_as_percentage * (viz.config.spinnerspeedmax - viz.config.spinnerspeedmin)) + viz.config.spinnerspeedmin;
                     }
-                    console.log("speed is",speed);
                     viz.$svg.find(".single_value_viz-fill_base").attr("fill", value_color);
                     viz.$svg.find(".single_value_viz-stroke_base").attr("stroke", value_color);
                     viz.$svg.find(".single_value_viz-speed_1x").attr("dur", speed + "s");
@@ -629,9 +634,26 @@ function(
                 viz.areaCfg.data.datasets[0].data = overtimedata;
                 viz.areaCfg.data.datasets[0].fill = viz.config.sparkstyle == "area" ? 'origin' : false;
 
-
-                // TODO number should animate on change
-                viz.overlay.text(value_display);
+                // Animate number on change
+                // Need to have a previous value and both old and new need to be numbers for animation to work
+                // textsize: "1",
+                // font: "bold",                
+    
+                // TODO need a latch to make sure kill any currently running animations
+                var overlay_prev = Number(viz.overlay_prev);
+                var overlay_now = Number(value_display);
+                if (! isNaN(overlay_prev) && ! isNaN(overlay_now) && overlay_prev !== overlay_now && viz.config.textprecision !== "nolimit") {
+                    $({value: overlay_prev, target: viz.overlay}).animate({value: overlay_now}, {
+                        duration: viz.config.textduration,
+                        easing: "swing",
+                        step: function(val, fx) {
+                            this.target.html(viz.buildOverlay(val));
+                        }
+                    });
+                } else {
+                    viz.overlay.html(viz.buildOverlay(val));
+                }
+                viz.overlay_prev = value_display;
                 
             } else {
                 viz.errordiv.html("No data");
@@ -649,11 +671,43 @@ function(
                 viz.myArea.update();
                 if (viz.config.base_obj === "donut") {
                     viz.myDoughnut.update(); 
-                }               
+                }
                 viz.errordiv.css("display", "none");
                 viz.canvas1.css("display", "block");
                 viz.canvas2.css("display", "block");
             }
+        },
+
+        buildOverlay: function(val) {
+            var viz = this;
+            var ret = val;
+            if (viz.config.textprecision === "1") {
+                ret = Math.round(val);
+            } else if (viz.config.textprecision === "2") {
+                ret = Math.round(val * 10) / 10;
+            } else if (viz.config.textprecision === "3") {
+                ret = Math.round(val * 100) / 100;
+            } else if (viz.config.textprecision === "4") {
+                ret = Math.round(val * 1000) / 1000;
+            } else if (viz.config.textprecision === "5") {
+                ret = Math.round(val * 10000) / 10000;
+            } else if (viz.config.textprecision === "6") {
+                ret = Math.round(val * 100000) / 100000;
+            }
+            ret = ret.toString();
+            if (viz.config.textthousands === "yes") {
+                ret = ret.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            if (viz.config.textunit) {
+                // intentially allowing html injection. yolo
+                var unit = "<span class='number_display_viz-unit'>" + viz.config.textunit + "</span>";
+                if (viz.config.textunitposition === "after") {
+                    ret = ret + " " + unit;
+                } else {
+                    ret = unit + " " + ret;
+                }
+            }
+            return ret;
         },
 
         // Override to respond to re-sizing events
