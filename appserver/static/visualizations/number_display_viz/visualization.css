@@ -1,20 +1,38 @@
-/*
- * CSS rules for visualization.
- * Class namespacing is good practice.
- */
-.single_value_viz-container {
+@import url('https://fonts.googleapis.com/css?family=Luckiest+Guy|Montserrat:900|Teko:700&display=swap');
+
+.number_display_viz-container {
     position: relative; 
 }
-.single_value_viz-overlay {
+.number_display_viz-overlay {
     text-align: center;
     width: 100%;
     font-weight: bold;
-    line-height: 1.1;
+    line-height: 1;
     position: absolute;
     z-index: 3;
+    overflow: hidden;
+    text-shadow: 1px 1px 1px white;
 }
-.single_value_viz-wrap_areachart,
-.single_value_viz-wrap_gauge {
+.number_display_viz-unit {
+    font-size: 50%;
+    opacity: 0.7;
+    position: absolute;
+    line-height: 100px;
+}
+.number_display_viz-thin {
+    font-weight: normal;
+}
+.number_display_viz-gf1 {
+    font-family: 'Teko', sans-serif;
+}
+.number_display_viz-gf2 {
+    font-family: 'Montserrat', sans-serif;
+}
+.number_display_viz-gf3 {
+    font-family: 'Luckiest Guy', cursive;
+}
+.number_display_viz-wrap_areachart,
+.number_display_viz-wrap_gauge {
     position: absolute;
     margin: 0 auto;
     left: 0;

@@ -164,6 +164,21 @@
 
 <form class="splunk-formatter-section" section-label="Overlay">
 
+        <splunk-control-group label="Color">
+                <splunk-select name="{{VIZ_NAMESPACE}}.textmode" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="auto">Threshold color</option>
+                        <option value="static">Static</option>
+                </splunk-select>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.textcolor" value="#000000" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                        <splunk-color>#ffffff</splunk-color>
+                        <splunk-color>#000000</splunk-color>
+                </splunk-color-picker>
+                
+        </splunk-control-group>
+
+
         <splunk-control-group label="Size scale">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.textsize" value="100" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
@@ -197,17 +212,28 @@
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.textunit" value=""></splunk-text-input>
         </splunk-control-group>
 
+        <splunk-control-group label="Unit scale">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.textunitsize" value="50" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
+        </splunk-control-group>
+
         <splunk-control-group label="Unit position">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textunitposition" value="after">
+                <splunk-select name="{{VIZ_NAMESPACE}}.textunitposition" value="after">
                         <option value="before">Before</option>
                         <option value="after">After</option>
-                </splunk-radio-input>
+                        <option value="afterabs">After (floating)</option>
+                        <option value="overlayed">Overlayed</option>
+                        <option value="above">Above</option>
+                </splunk-select>
         </splunk-control-group>
 
         <splunk-control-group label="Font">
-                <splunk-select name="{{VIZ_NAMESPACE}}.font" value="bold">
-                        <option value="bold">Bold</option>
-                        <option value="thin">Thin</option>
+                <splunk-select name="{{VIZ_NAMESPACE}}.textfont" value="">
+                        <option value="">Bold</option>
+                        <option value="number_display_viz-thin">Thin</option>
+                        <option value="number_display_viz-gf1">Teko</option>
+                        <option value="number_display_viz-gf2">Montserrat</option>
+                        <option value="number_display_viz-gf3">Luckiest Guy</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -215,6 +241,7 @@
 
 
 <form class="splunk-formatter-section" section-label="Advanced">
+
         <splunk-control-group label=" ">
         <div style="font-weight:bold">
                 Spinners
