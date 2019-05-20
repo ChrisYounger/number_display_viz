@@ -19,16 +19,17 @@
                         <option value="s7">Spinner 7</option>
                         <option value="s8">Spinner 8</option>
                         <option value="s9">Spinner 9</option>
-                        <option value="a1">Shape - Square</option>
-                        <option value="a2">Shape - Rectangle 1</option>
-                        <option value="a3">Shape - Rectangle 2</option>
-                        <option value="a4">Shape - Circle</option>
-                        <option value="a5">Shape - Ring 1</option>
-                        <option value="a6">Shape - Ring 2</option>
-                        <option value="a7">Shape - Hexagon 1</option>
-                        <option value="a8">Shape - Hexagon 2</option>
-                        <option value="a9">Shape - Hexagon 3</option>
-                        <option value="a10">Shape - Hexagon 4</option>
+                        <option value="a1">Shape - Square 1</option>
+                        <option value="a2">Shape - Square 2</option>
+                        <option value="a3">Shape - Rectangle 1</option>
+                        <option value="a4">Shape - Rectangle 2</option>
+                        <option value="a5">Shape - Circle</option>
+                        <option value="a6">Shape - Ring 1</option>
+                        <option value="a7">Shape - Ring 2</option>
+                        <option value="a8">Shape - Hexagon 1</option>
+                        <option value="a9">Shape - Hexagon 2</option>
+                        <option value="a10">Shape - Hexagon 3</option>
+                        <option value="a11">Shape - Hexagon 4</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -111,14 +112,33 @@
                 </splunk-radio-input>
         </splunk-control-group>
 
-        <splunk-control-group label="Color">
-                <splunk-select name="{{VIZ_NAMESPACE}}.sparkcolormode" value="auto" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
-                        <option value="static">Static</option>
+        <splunk-control-group label="Line color">
+                <splunk-select name="{{VIZ_NAMESPACE}}.sparkcolormodeline" value="auto" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="static">Manual</option>
                         <option value="auto">Threshold color</option>
-                        <option value="lighter">Threshold color (lighter)</option>
-                        <option value="darker">Threshold color (darker)</option>
+                        <option value="lighter1">Threshold color (30% lighter)</option>
+                        <option value="lighter2">Threshold color (60% lighter)</option>
+                        <option value="darker1">Threshold color (30% darker)</option>
+                        <option value="darker2">Threshold color (60% darker)</option>
                 </splunk-select>
-                <splunk-color-picker name="{{VIZ_NAMESPACE}}.sparkcolor" value="#5C6773" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.sparkcolorline" value="#5C6773" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                        <splunk-color>#ffffff</splunk-color>
+                        <splunk-color>#000000</splunk-color>
+                </splunk-color-picker>
+        </splunk-control-group>
+
+        <splunk-control-group label="Fill color">
+                <splunk-select name="{{VIZ_NAMESPACE}}.sparkcolormodefill" value="auto" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="static">Manual</option>
+                        <option value="auto">Threshold color</option>
+                        <option value="lighter1">Threshold color (30% lighter)</option>
+                        <option value="lighter2">Threshold color (60% lighter)</option>
+                        <option value="darker1">Threshold color (30% darker)</option>
+                        <option value="darker2">Threshold color (60% darker)</option>
+                </splunk-select>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.sparkcolorfill" value="#5C6773" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
                         <splunk-color>#F2F4F5</splunk-color>
                         <splunk-color>#5C6773</splunk-color>
                         <splunk-color>#ffffff</splunk-color>
@@ -162,10 +182,12 @@
 
         <splunk-control-group label="Color">
                 <splunk-select name="{{VIZ_NAMESPACE}}.textmode" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
-                        <option value="static">Static</option>
+                        <option value="static">Manual</option>
                         <option value="auto">Threshold color</option>
-                        <option value="lighter">Threshold color (lighter)</option>
-                        <option value="darker">Threshold color (darker)</option>
+                        <option value="lighter1">Threshold color (30% lighter)</option>
+                        <option value="lighter2">Threshold color (60% lighter)</option>
+                        <option value="darker1">Threshold color (30% darker)</option>
+                        <option value="darker2">Threshold color (60% darker)</option>
                 </splunk-select>
                 <splunk-color-picker name="{{VIZ_NAMESPACE}}.textcolor" value="#000000" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
                         <splunk-color>#F2F4F5</splunk-color>
@@ -173,7 +195,6 @@
                         <splunk-color>#ffffff</splunk-color>
                         <splunk-color>#000000</splunk-color>
                 </splunk-color-picker>
-                
         </splunk-control-group>
 
         <splunk-control-group label="Size scale">
@@ -181,7 +202,7 @@
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
         
-        <splunk-control-group label="Animation time" help="Precision must be specified for animation. Set 0 to disable. ">
+        <splunk-control-group label="Animation time" help="Precision must be specified for animation. Set 0 to disable.">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.textduration" value="300" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">ms</span>
         </splunk-control-group>
@@ -219,8 +240,8 @@
                         <option value="before">Before</option>
                         <option value="after">After</option>
                         <option value="afterabs">After (floating)</option>
-                        <option value="overlayed">Overlayed</option>
                         <option value="above">Above</option>
+                        <option value="below">Below</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -234,6 +255,17 @@
                 </splunk-select>
         </splunk-control-group>
 
+
+        <splunk-control-group label="Drop shadow">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textdrop" value="yes" style="width:130px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                </splunk-radio-input>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.textdropcolor" value="#ffffff" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                </splunk-color-picker>
+        </splunk-control-group>
 </form>
 
 
@@ -272,7 +304,7 @@
 <form class="splunk-formatter-section" section-label="Spinners">
 
         </splunk-control-group>
-        <splunk-control-group label="Duration at min">
+        <splunk-control-group label="Duration at min" help="Larger is slower">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmin" value="10" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
         </splunk-control-group>
@@ -281,13 +313,47 @@
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
         </splunk-control-group>
 
+        <splunk-control-group label="Secondary color">
+                <splunk-select name="{{VIZ_NAMESPACE}}.spinnersecondarymode" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="static">Manual</option>
+                        <option value="auto">Threshold color</option>
+                        <option value="lighter1">Threshold color (30% lighter)</option>
+                        <option value="lighter2">Threshold color (60% lighter)</option>
+                        <option value="darker1">Threshold color (30% darker)</option>
+                        <option value="darker2">Threshold color (60% darker)</option>
+                </splunk-select>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.spinnersecondarycolor" value="#F2F4F5" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                        <splunk-color>#ffffff</splunk-color>
+                        <splunk-color>#000000</splunk-color>
+                </splunk-color-picker>
+        </splunk-control-group>
 </form>
 
 
 <form class="splunk-formatter-section" section-label="Shapes">
+        <splunk-control-group label="Drop shadow">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.shapeshadow" value="yes" style="width:130px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                </splunk-radio-input>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.shapedropcolor" value="#ffffff" type="splunkCategorical" style="vertical-align:top; display:inline-block;">
+                        <splunk-color>#F2F4F5</splunk-color>
+                        <splunk-color>#5C6773</splunk-color>
+                </splunk-color-picker>
+        </splunk-control-group>
 
-
-
+        <splunk-control-group label="Fill texture">
+                <splunk-select name="{{VIZ_NAMESPACE}}.shapetexture" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="solid">Solid</option>
+                        <option value="triangles">Triangles</option>
+                        <option value="Squares">Squares</option>
+                        <option value="texture3">Texture 3</option>
+                        <option value="texture4">Texture 4</option>
+                        <option value="texture5">Texture 5</option>
+                </splunk-select>
+        </splunk-control-group>
 </form>
 
 <form class="splunk-formatter-section" section-label="Help">
