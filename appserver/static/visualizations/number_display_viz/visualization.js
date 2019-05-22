@@ -114,7 +114,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                bordersize: "2",
 	                textsize: "100",
 	                textduration: "300",
-	                textprecision: "nolimit",
+	                textprecision: "1",
 	                textthousands: "no",
 	                textunit: "",
 	                textunitsize: "50",
@@ -140,8 +140,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                shapetexture: "solid",
 	                shapeshadow: "yes",
 	                shapedropcolor: "#ffffff",
-	                shapecolormode: "auto",
-	                shapecolor: "#000000",
+	                shapecolorprimarymode: "auto",
+	                shapecolorprimary: "#000000",
+	                shapecolorsecondarymode: "darker1",
+	                shapecolorsecondary: "#000000",
 	                shapebordercolor: "#FFFFFF",
 	                shapebordersize: "1",
 
@@ -238,15 +240,23 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    sparkWidth: 0.7,
 	                },
 	                a3: { 
-	                    overlayHeight: 0.3,
-	                    overlaySize: 1,
+	                    overlayHeight: 0.13,
+	                    overlaySize: 0.6,
 	                    mainHeight: 0.5,
-	                    mainWidth: 2,
-	                    sparkMarginTop: 0.4,
-	                    sparkHeight: 0.6,
-	                    sparkWidth: 1.8,
+	                    mainWidth: 1,
+	                    sparkMarginTop: 0.25,
+	                    sparkHeight: 0.3,
+	                    sparkWidth: 0.8,
 	                },
-	                a4: { mainWidth: 2, },
+	                a4: {
+	                    overlayHeight: 0.13,
+	                    overlaySize: 0.6,
+	                    mainHeight: 0.5,
+	                    mainWidth: 1,
+	                    sparkMarginTop: 0.25,
+	                    sparkHeight: 0.3,
+	                    sparkWidth: 0.8,
+	                },
 	                a5: {  },
 	                a6: {  },
 	                a7: {  },
@@ -524,74 +534,91 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	// Add subtitle
 	// Add library that can do color darkening etc.
 	// Then set borders around the place to be a few shades darker than the elem 
+	 
+	 // Try to make all these thesame size, fit in 100 by 100
 	                    } else if (viz.config.style === "a1") { // square
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100">'+
-	"<defs>"+
-
-	                        '<rect x="5" y="5" width="90" height="90" class="number_display_viz-shape" fill="url(#img1)" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<rect x="5" y="5" width="90" height="90" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a2") { // square
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="60 80 280 280">'+
-	                        '<path d="M100,100 h200 a20,20 0 0 1 20,20 v200 a20,20 0 0 1 -20,20 h-200 a20,20 0 0 1 -20,-20 v-200 a20,20 0 0 1 20,-20 z" class="number_display_viz-shape" fill="#ffffff" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<path d="M 10 5 h 80 a 5,5 0 0 1 5,5 v80 a5,5 0 0 1 -5,5 h-80 a5,5 0 0 1 -5,-5 v-80 a5,5 0 0 1 5,-5 z" class="number_display_viz-shape"></path>';
 
 	                    } else if (viz.config.style === "a3") { // rect 1
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 50" >'+
-	                        '<rect x="5" y="5" width="90" height="45" class="number_display_viz-shape" fill="#ffffff" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 50";
+	                        viz.svgString = '<rect x="5" y="5" width="90" height="45" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a4") { // rect 2
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 240 160">'+
-	                        '<path d="M0,10 h240 a20,20 0 0 1 20,20 v100 a20,20 0 0 1 -20,20 h-240 a20,20 0 0 1 -20,-20 v-100 a20,20 0 0 1 20,-20 z" class="number_display_viz-shape" fill="#4fa484"></path>'+
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 50";
+	                        viz.svgString = '<path d="M 10 2.5 h 80 a 2.5,2.5 0 0 1 2.5,2.5 v40 a2.5,2.5 0 0 1 -2.5,2.5 h-80 a2.5,2.5 0 0 1 -2.5,-2.5 v-40 a2.5,2.5 0 0 1 2.5,-2.5 z" class="number_display_viz-shape"></path>';
+	                        //viz.svgString = '<path d="M0,10 h240 a20,20 0 0 1 20,20 v100 a20,20 0 0 1 -20,20 h-240 a20,20 0 0 1 -20,-20 v-100 a20,20 0 0 1 20,-20 z" class="number_display_viz-shape"></path>';
 
 	                    } else if (viz.config.style === "a5") { // circle
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="10 10 90 90">'+
-	                        '<circle cx="55" cy="55" r="40" class="number_display_viz-shape" fill="#ffffff" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<circle cx="50" cy="50" r="45" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a6") { // big ring
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="7 6 86 86">'+
-	                        '<path d="M 50 10 A 40 40 0 1 0 50 90 A 40 40 0 1 0 50 10 Z M 50 30 A 20 20 0 1 1 50 70 A 20 20 0 1 1 50 30 Z" class="number_display_viz-shape" fill="#ffffff" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<path d="M 50 5 A 45 45 0 1 0 50 95 A 45 45 0 1 0 50 5 Z M 50 30 A 20 20 0 1 1 50 70 A 20 20 0 1 1 50 30 Z" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a7") { // little ring
-	                        viz.$svg = $('<svg width="100%" height="100%" mlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="7 6 86 86">'+
-	                        '<path d="M 50 10 '+ 
-	                        'A 40 40 0 1 0 50 90 '+
-	                        'A 40 40 0 1 0 50 10 '+
-	                        'Z '+
-	                        'M 50 15 '+
-	                        'A 35 35 0 1 1 50 85 '+
-	                        'A 35 35 0 1 1 50 15 Z" class="number_display_viz-shape" fill="#ffffff" />' +
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<path d="M 50 5 A 45 45 0 1 0 50 95 A 45 45 0 1 0 50 5 Z M 50 15 A 35 35 0 1 1 50 85 A 35 35 0 1 1 50 15 Z" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a8") { // Hex 1
-	                        viz.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 300 300" preserveAspectRatio="xMidYMid">'+
-	                        '<polygon points="300,150 225,280 75,280 0,150 75,20 225,20" class="number_display_viz-shape" fill="#ffffff"></polygon>'+
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<polygon points="100,50 75,93 25,93 0,50 25,7 75,7" class="number_display_viz-shape"></polygon>';
 
 	                    } else if (viz.config.style === "a9") { // Hex 2
 	                        // from here: https://codepen.io/wvr/pen/WrNgJp
-	                        viz.$svg = $('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 200 173.20508075688772" >'+
-	                        '<path d="M5 95.2627Q0 86.6025 5 77.9422L45 8.6602Q50 0 60 0L140 0Q150 0 155 8.6602L195 77.9422Q200 86.6025 195 95.2627L155 164.5448Q150 173.2050 140 173.20508L60 173.2050Q50 173.2050 45 164.5448Z" class="number_display_viz-shape">'+
-	                        '</path></svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 87";
+	                        viz.svgString = '<path d="M2.5 47.6 Q 0 43 2.5 39 L 22.5 4.3 Q 25 0 30 0 L 70 0 Q 75 0 77.5 4 L 97.5 39 Q 100 43 97.5 47.6 L 77.5 82 Q 75 86.6 70 86.6 L 30 86.6 Q 25 86.6 22.5 82 Z" class="number_display_viz-shape">';
 
 	                    } else if (viz.config.style === "a10") { // Hex 3
-	                        viz.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 -5 175 205" preserveAspectRatio="xMidYMid">'+
-	                        '<polygon points="87,0 174,50 174,150 87,200 0,150 0,50 87,0" class="number_display_viz-shape" fill="#ffffff"></polygon>'+
-	                        '</svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 100 100";
+	                        viz.svgString = '<polygon points="100,50 75,93 25,93 0,50 25,7 75,7" class="number_display_viz-shape"  transform="rotate(90 50 50)"></polygon>';
 
 	                    } else if (viz.config.style === "a11") { // Hex 4
-	                        viz.$svg = $('<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 -4 173.20508075688772 204">'+
-	                        '<path d="M77.94228 5Q86.60254 0 95.262794 4.99999L164.54482 45Q173.20508 50 173.20508 60L173.20508 140Q173.20508 150 164.54482 155L95.26279 195Q86.60254 200 77.94228 195L8.66025 155Q0 150 0 140L0 60Q0 50 8.6602 45Z" class="number_display_viz-shape" fill="#ffffff">'+
-	                        '</path></svg>').appendTo(viz.$wrapc2);
+	                        viz.svgViewbox = "0 0 87 100";
+	                        viz.svgString = '<path d="M39 2.5 Q 43 0 48 2.5 L 82 22.5 Q 86.6 25 86.6 30L86.6 70 Q 86.6 75 82.3 77.5 L 47.6 97.5 Q 43.3 100 39 97.5 L 4.3 77.5 Q 0 75 0 70 L 0 30 Q 0 25 4.3 22.5 Z" class="number_display_viz-shape">';
+
 	                    }
 	                }
 
 	                if (viz.config.style.substr(0,1) === "a") {
+
+
+	                    // Add the texture
+	                    if (viz.config.shapetexture === "solid") {
+	                        viz.svgGradient = '<defs><linearGradient id="texture1" x1="0%" y1="0%" x2="0%" y2="100%">'+
+	                        '<stop offset="0%" stop-color="rgb(255,255,0)" stop-opacity="1" class="number_display_viz-stop_primary"/>'+
+	                        '<stop offset="100%" stop-color="rgb(255,0,0)" stop-opacity="1" class="number_display_viz-stop_secondary" />'+
+	                        '</linearGradient></defs>';
+
+	                    } else if (viz.config.shapetexture === "triangles") {
+	                        // FYI You cant insert defs after the svg has been created
+	                        viz.svgGradient = "<defs><pattern id='texture1' patternUnits='userSpaceOnUse' width='540' height='450' x='-10' y='-10'><svg xmlns='http://www.w3.org/2000/svg' width='540' height='450' viewBox='0 0 1080 900'><defs><linearGradient id='a' gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='0' y2='100%' ><stop offset='0' stop-color='rgb(255,255,0)' class='number_display_viz-stop_primary'/><stop offset='1' stop-color='rgb(255,0,0)' class='number_display_viz-stop_secondary'/></linearGradient><pattern patternUnits='userSpaceOnUse' id='b' width='100' height='100' x='0' y='0' viewBox='0 0 1080 900'><g fill-opacity='0.1'><polygon fill='#444' points='90 150 0 300 180 300'/><polygon points='90 150 180 0 0 0'/><polygon fill='#AAA' points='270 150 360 0 180 0'/><polygon fill='#DDD' points='450 150 360 300 540 300'/><polygon fill='#999' points='450 150 540 0 360 0'/><polygon points='630 150 540 300 720 300'/><polygon fill='#DDD' points='630 150 720 0 540 0'/><polygon fill='#444' points='810 150 720 300 900 300'/><polygon fill='#FFF' points='810 150 900 0 720 0'/><polygon fill='#DDD' points='990 150 900 300 1080 300'/><polygon fill='#444' points='990 150 1080 0 900 0'/><polygon fill='#DDD' points='90 450 0 600 180 600'/><polygon points='90 450 180 300 0 300'/><polygon fill='#666' points='270 450 180 600 360 600'/><polygon fill='#AAA' points='270 450 360 300 180 300'/><polygon fill='#DDD' points='450 450 360 600 540 600'/><polygon fill='#999' points='450 450 540 300 360 300'/><polygon fill='#999' points='630 450 540 600 720 600'/><polygon fill='#FFF' points='630 450 720 300 540 300'/><polygon points='810 450 720 600 900 600'/><polygon fill='#DDD' points='810 450 900 300 720 300'/><polygon fill='#AAA' points='990 450 900 600 1080 600'/><polygon fill='#444' points='990 450 1080 300 900 300'/><polygon fill='#222' points='90 750 0 900 180 900'/><polygon points='270 750 180 900 360 900'/><polygon fill='#DDD' points='270 750 360 600 180 600'/><polygon points='450 750 540 600 360 600'/><polygon points='630 750 540 900 720 900'/><polygon fill='#444' points='630 750 720 600 540 600'/><polygon fill='#AAA' points='810 750 720 900 900 900'/><polygon fill='#666' points='810 750 900 600 720 600'/><polygon fill='#999' points='990 750 900 900 1080 900'/><polygon fill='#999' points='180 0 90 150 270 150'/><polygon fill='#444' points='360 0 270 150 450 150'/><polygon fill='#FFF' points='540 0 450 150 630 150'/><polygon points='900 0 810 150 990 150'/><polygon fill='#222' points='0 300 -90 450 90 450'/><polygon fill='#FFF' points='0 300 90 150 -90 150'/><polygon fill='#FFF' points='180 300 90 450 270 450'/><polygon fill='#666' points='180 300 270 150 90 150'/><polygon fill='#222' points='360 300 270 450 450 450'/><polygon fill='#FFF' points='360 300 450 150 270 150'/><polygon fill='#444' points='540 300 450 450 630 450'/><polygon fill='#222' points='540 300 630 150 450 150'/><polygon fill='#AAA' points='720 300 630 450 810 450'/><polygon fill='#666' points='720 300 810 150 630 150'/><polygon fill='#FFF' points='900 300 810 450 990 450'/><polygon fill='#999' points='900 300 990 150 810 150'/><polygon points='0 600 -90 750 90 750'/><polygon fill='#666' points='0 600 90 450 -90 450'/><polygon fill='#AAA' points='180 600 90 750 270 750'/><polygon fill='#444' points='180 600 270 450 90 450'/><polygon fill='#444' points='360 600 270 750 450 750'/><polygon fill='#999' points='360 600 450 450 270 450'/><polygon fill='#666' points='540 600 630 450 450 450'/><polygon fill='#222' points='720 600 630 750 810 750'/><polygon fill='#FFF' points='900 600 810 750 990 750'/><polygon fill='#222' points='900 600 990 450 810 450'/><polygon fill='#DDD' points='0 900 90 750 -90 750'/><polygon fill='#444' points='180 900 270 750 90 750'/><polygon fill='#FFF' points='360 900 450 750 270 750'/><polygon fill='#AAA' points='540 900 630 750 450 750'/><polygon fill='#FFF' points='720 900 810 750 630 750'/><polygon fill='#222' points='900 900 990 750 810 750'/><polygon fill='#222' points='1080 300 990 450 1170 450'/><polygon fill='#FFF' points='1080 300 1170 150 990 150'/><polygon points='1080 600 990 750 1170 750'/><polygon fill='#666' points='1080 600 1170 450 990 450'/><polygon fill='#DDD' points='1080 900 1170 750 990 750'/></g></pattern></defs><rect x='0' y='0' fill='url(#a)' width='1080' height='900'/><rect x='0' y='0' fill='url(#b)' width='1080' height='900'/></svg></pattern></defs>";
+
+	                    } else if (viz.config.shapetexture === "Squares") { // https://www.svgbackgrounds.com/#randomized-pattern
+	viz.svgGradient = "<defs><pattern id='texture1' patternUnits='userSpaceOnUse' width='400' height='200'><svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='400' height='200' viewBox='0 0 100 50'><defs><rect stroke='#ffffff' stroke-width='0.2' width='1' height='1' id='s'/><pattern id='a' width='2' height='2' patternUnits='userSpaceOnUse'><g stroke='#ffffff' stroke-width='0.2'><rect fill='#fafafa' width='1' height='1'/><rect fill='#ffffff' width='1' height='1' x='1' y='1'/><rect fill='#f5f5f5' width='1' height='1' y='1'/><rect fill='#f0f0f0' width='1' height='1' x='1'/></g></pattern><pattern id='b' width='5' height='11' patternUnits='userSpaceOnUse'><g fill='#ebebeb'><use xlink:href='#s' x='2' y='0'/><use xlink:href='#s' x='4' y='1'/><use xlink:href='#s' x='1' y='2'/><use xlink:href='#s' x='2' y='4'/><use xlink:href='#s' x='4' y='6'/><use xlink:href='#s' x='0' y='8'/><use xlink:href='#s' x='3' y='9'/></g></pattern><pattern id='c' width='7' height='7' patternUnits='userSpaceOnUse'><g fill='#e5e5e5'><use xlink:href='#s' x='1' y='1'/><use xlink:href='#s' x='3' y='4'/><use xlink:href='#s' x='5' y='6'/><use xlink:href='#s' x='0' y='3'/></g></pattern><pattern id='d' width='11' height='5' patternUnits='userSpaceOnUse'><g fill='#ffffff'><use xlink:href='#s' x='1' y='1'/><use xlink:href='#s' x='6' y='3'/><use xlink:href='#s' x='8' y='2'/><use xlink:href='#s' x='3' y='0'/><use xlink:href='#s' x='0' y='3'/></g><g fill='#e0e0e0'><use xlink:href='#s' x='8' y='3'/><use xlink:href='#s' x='4' y='2'/><use xlink:href='#s' x='5' y='4'/><use xlink:href='#s' x='10' y='0'/></g></pattern><pattern id='e' width='47' height='23' patternUnits='userSpaceOnUse'><g fill='#BA7' class='number_display_viz-fill_primary'><use xlink:href='#s' x='2' y='5'/><use xlink:href='#s' x='23' y='13'/><use xlink:href='#s' x='4' y='18'/><use xlink:href='#s' x='35' y='9'/></g></pattern><pattern id='f' width='61' height='31' patternUnits='userSpaceOnUse'><g fill='#BA7' class='number_display_viz-fill_primary'><use xlink:href='#s' x='16' y='0'/><use xlink:href='#s' x='13' y='22'/><use xlink:href='#s' x='44' y='15'/><use xlink:href='#s' x='12' y='11'/></g></pattern></defs><rect fill='url(#a)' width='100' height='50'/><rect fill='url(#b)' width='100' height='50'/><rect fill='url(#c)' width='100' height='50'/><rect fill='url(#d)' width='100' height='50'/><rect fill='url(#e)' width='100' height='50'/><rect fill='url(#f)' width='100' height='50'/></svg></pattern></defs>";
+
+	                    } else if (viz.config.shapetexture === "texture3") { // https://www.svgbackgrounds.com/#wintery-sunburst centered
+	viz.svgGradient = "<defs><pattern id='texture1' patternUnits='userSpaceOnUse' width='140' height='140' x='-20' y='-20'><svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
+
+	                    } else if (viz.config.shapetexture === "texture4") { // https://www.svgbackgrounds.com/#wintery-sunburst offset
+	viz.svgGradient = "<defs><pattern id='texture1' patternUnits='userSpaceOnUse' width='200' height='200' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
+
+	                    } else if (viz.config.shapetexture === "texture5") {
+	viz.svgGradient = "<defs><pattern id='texture1' patternUnits='userSpaceOnUse' width='100' height='100' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='25 25 1000 1000'>"+
+	"<defs><pattern id='a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='46' height='46' fill-opacity='0.6' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#a)'/></svg></pattern></defs>";
+
+	                    }
+
+
+	                    viz.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + viz.svgViewbox + '" preserveAspectRatio="xMidYMid">'+ viz.svgGradient + viz.svgString + '</svg>');
 	                    viz.$svgShape = viz.$svg.find(".number_display_viz-shape");
+	                    viz.$svgShape.attr("fill", "url(#texture1)");
+	                    viz.$svg.appendTo(viz.$wrapc2);
 
 	                    // Add the border to shapes
 	                    if (viz.config.shapebordersize > 0) {
@@ -600,13 +627,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    // Add the drop shadow to shapes
 	                    if (viz.config.shapeshadow === "yes") {
 	                        viz.$svg.css("filter", "drop-shadow(" + tinycolor(viz.config.shapedropcolor).setAlpha(.5).toRgbString() + " 0px 0px " + (viz.size * viz.config.mainHeight * 0.04) + "px)");
-	                    }
-	                    // Add the texture
-	                    if (viz.config.shapetexture === "solid") {
-	                        viz.$svgShape.addClass("number_display_viz-fill_primary");
-
-	                    } else if (viz.config.shapetexture === "triangles") {
-	                        viz.$svgShape.prepend("<pattern id=\"img1\" patternUnits=\"userSpaceOnUse\" width=\"100\" height=\"100\"><svg xmlns='http://www.w3.org/2000/svg' width='100%'><defs><linearGradient id='a' gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='0' y2='100%' gradientTransform='rotate(177,1280,648)'><stop offset='0' stop-color='#4fa484' class='number_display_viz-stop_primary'/><stop offset='1' stop-color='#4fa484' class='number_display_viz-stop_secondary'/></linearGradient><pattern patternUnits='userSpaceOnUse' id='b' width='60' height='50' x='0' y='0' viewBox='0 0 1080 900'><g fill-opacity='0.1'><polygon fill='#444' points='90 150 0 300 180 300'/><polygon points='90 150 180 0 0 0'/><polygon fill='#AAA' points='270 150 360 0 180 0'/><polygon fill='#DDD' points='450 150 360 300 540 300'/><polygon fill='#999' points='450 150 540 0 360 0'/><polygon points='630 150 540 300 720 300'/><polygon fill='#DDD' points='630 150 720 0 540 0'/><polygon fill='#444' points='810 150 720 300 900 300'/><polygon fill='#FFF' points='810 150 900 0 720 0'/><polygon fill='#DDD' points='990 150 900 300 1080 300'/><polygon fill='#444' points='990 150 1080 0 900 0'/><polygon fill='#DDD' points='90 450 0 600 180 600'/><polygon points='90 450 180 300 0 300'/><polygon fill='#666' points='270 450 180 600 360 600'/><polygon fill='#AAA' points='270 450 360 300 180 300'/><polygon fill='#DDD' points='450 450 360 600 540 600'/><polygon fill='#999' points='450 450 540 300 360 300'/><polygon fill='#999' points='630 450 540 600 720 600'/><polygon fill='#FFF' points='630 450 720 300 540 300'/><polygon points='810 450 720 600 900 600'/><polygon fill='#DDD' points='810 450 900 300 720 300'/><polygon fill='#AAA' points='990 450 900 600 1080 600'/><polygon fill='#444' points='990 450 1080 300 900 300'/><polygon fill='#222' points='90 750 0 900 180 900'/><polygon points='270 750 180 900 360 900'/><polygon fill='#DDD' points='270 750 360 600 180 600'/><polygon points='450 750 540 600 360 600'/><polygon points='630 750 540 900 720 900'/><polygon fill='#444' points='630 750 720 600 540 600'/><polygon fill='#AAA' points='810 750 720 900 900 900'/><polygon fill='#666' points='810 750 900 600 720 600'/><polygon fill='#999' points='990 750 900 900 1080 900'/><polygon fill='#999' points='180 0 90 150 270 150'/><polygon fill='#444' points='360 0 270 150 450 150'/><polygon fill='#FFF' points='540 0 450 150 630 150'/><polygon points='900 0 810 150 990 150'/><polygon fill='#222' points='0 300 -90 450 90 450'/><polygon fill='#FFF' points='0 300 90 150 -90 150'/><polygon fill='#FFF' points='180 300 90 450 270 450'/><polygon fill='#666' points='180 300 270 150 90 150'/><polygon fill='#222' points='360 300 270 450 450 450'/><polygon fill='#FFF' points='360 300 450 150 270 150'/><polygon fill='#444' points='540 300 450 450 630 450'/><polygon fill='#222' points='540 300 630 150 450 150'/><polygon fill='#AAA' points='720 300 630 450 810 450'/><polygon fill='#666' points='720 300 810 150 630 150'/><polygon fill='#FFF' points='900 300 810 450 990 450'/><polygon fill='#999' points='900 300 990 150 810 150'/><polygon points='0 600 -90 750 90 750'/><polygon fill='#666' points='0 600 90 450 -90 450'/><polygon fill='#AAA' points='180 600 90 750 270 750'/><polygon fill='#444' points='180 600 270 450 90 450'/><polygon fill='#444' points='360 600 270 750 450 750'/><polygon fill='#999' points='360 600 450 450 270 450'/><polygon fill='#666' points='540 600 630 450 450 450'/><polygon fill='#222' points='720 600 630 750 810 750'/><polygon fill='#FFF' points='900 600 810 750 990 750'/><polygon fill='#222' points='900 600 990 450 810 450'/><polygon fill='#DDD' points='0 900 90 750 -90 750'/><polygon fill='#444' points='180 900 270 750 90 750'/><polygon fill='#FFF' points='360 900 450 750 270 750'/><polygon fill='#AAA' points='540 900 630 750 450 750'/><polygon fill='#FFF' points='720 900 810 750 630 750'/><polygon fill='#222' points='900 900 990 750 810 750'/><polygon fill='#222' points='1080 300 990 450 1170 450'/><polygon fill='#FFF' points='1080 300 1170 150 990 150'/><polygon points='1080 600 990 750 1170 750'/><polygon fill='#666' points='1080 600 1170 450 990 450'/><polygon fill='#DDD' points='1080 900 1170 750 990 750'/></g></pattern></defs><rect x='0' y='0' fill='url(#a)' width='100%' height='100%'/><rect x='0' y='0' fill='url(#b)' width='100%' height='100%'/></svg></pattern></defs>");
 	                    }
 	                }
 	            }
@@ -897,19 +917,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        speed = (value_as_percentage * (viz.config.spinnerspeedmax - viz.config.spinnerspeedmin)) + viz.config.spinnerspeedmin;
 	                        speed = speed * viz.config.speedMultiplier;
 	                    }
+	                    var value_color_primary = value_color;
 	                    var value_color_secondary = viz.getColorFromMode(viz.config.spinnersecondarymode, viz.config.spinnersecondarycolor, value_color);
-	                    viz.$svg.find(".number_display_viz-fill_primary").attr("fill", value_color);
+
+	                    if (viz.config.style.substr(0,1) === "a") {
+	                        value_color_primary = viz.getColorFromMode(viz.config.shapecolorprimarymode, viz.config.shapecolorprimary, value_color);
+	                        value_color_secondary = viz.getColorFromMode(viz.config.shapecolorsecondarymode, viz.config.shapecolorsecondary, value_color);
+	                    }
+
+	                    viz.$svg.find(".number_display_viz-fill_primary").attr("fill", value_color_primary);
 	                    viz.$svg.find(".number_display_viz-fill_secondary").attr("fill", value_color_secondary);
-	                    viz.$svg.find(".number_display_viz-stroke_primary").attr("stroke", value_color);
+	                    viz.$svg.find(".number_display_viz-stroke_primary").attr("stroke", value_color_primary);
 	                    viz.$svg.find(".number_display_viz-stroke_secondary").attr("stroke", value_color_secondary);
-	                    viz.$svg.find(".number_display_viz-stop_primary").attr("stop-color", value_color);
+	                    viz.$svg.find(".number_display_viz-stop_primary").attr("stop-color", value_color_primary);
 	                    viz.$svg.find(".number_display_viz-stop_secondary").attr("stop-color", value_color_secondary);
 
 	                    viz.$svg.find(".number_display_viz-speed_1x").attr("dur", speed + "s");
 	                    viz.$svg.find(".number_display_viz-speed_05x").attr("dur", (speed * 0.5) + "s");
 	                    viz.$svg.find(".number_display_viz-speed_15x").attr("dur", (speed * 1.5) + "s");
-	                } else if (viz.config.base_obj === "box") {
-	                    viz.$wrapc2.css({"background-color": value_color});
 	                }
 	                
 	                if (viz.config.sparkshow === "yes") {
@@ -1013,13 +1038,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	        getColorFromMode: function(mode, color1, color2) {
 	            var viz = this;
 	            if (mode === "darker1") {
-	                return tinycolor(color2).darken(30).toString();
+	                return tinycolor(color2).darken(20).toString();
 	            } else if (mode === "darker2") {
-	                return tinycolor(color2).darken(60).toString();
+	                return tinycolor(color2).darken(40).toString();
 	            } else if (mode === "lighter1") {
-	                return tinycolor(color2).lighten(30).toString();
+	                return tinycolor(color2).lighten(20).toString();
 	            } else if (mode === "lighter2") {
-	                return tinycolor(color2).lighten(60).toString();
+	                return tinycolor(color2).lighten(40).toString();
 	            } else if (mode === "static") {
 	                return color1;
 	            }
