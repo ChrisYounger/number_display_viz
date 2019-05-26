@@ -3,7 +3,15 @@
 .number_display_viz-container {
     position: relative; 
 }
-.number_display_viz-overlay {
+.number_display_viz-overlay_text {
+    width: 100%;
+    font-weight: bold;
+    line-height: 1;
+    position: absolute;
+    z-index: 3;
+    overflow: hidden;
+}
+.number_display_viz-overlay_title {
     width: 100%;
     font-weight: bold;
     line-height: 1;
@@ -12,10 +20,7 @@
     overflow: hidden;
 }
 .number_display_viz-unit {
-    font-size: 50%;
     opacity: 0.7;
-    position: absolute;
-    line-height: 100px;
 }
 .number_display_viz-thin {
     font-weight: normal;
@@ -30,7 +35,7 @@
     font-family: 'Luckiest Guy', cursive;
 }
 .number_display_viz-wrap_areachart,
-.number_display_viz-wrap_gauge {
+.number_display_viz-wrap_main {
     position: absolute;
     margin: 0 auto;
     left: 0;

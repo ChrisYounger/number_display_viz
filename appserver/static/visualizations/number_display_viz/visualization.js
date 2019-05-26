@@ -125,7 +125,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                textmode: "static",
 	                textshow: "yes",
 	                textdrop: "yes",
+	                textalign: "center",
 	                textdropcolor: "#ffffff",
+	                titletext: "",
+	                titlealign: "center",
+	                titlecolormode: "static",
+	                titlecolor: "#5C6773",
+	                titlesize: "100",
+	                titlefont: "",
+	                titledrop: "yes",
+	                titledropcolor: "#ffffff",
 	                animations: "on",
 	                sparkshow: "yes",
 	                sparkmin: "",
@@ -153,9 +162,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                circumference: Math.PI + 0.6,
 	                rotation: -Math.PI - 0.3,
 	                cutoutPercentage: 50,
-	                overlayPosition: "center",
 	                overlayHeight: 0.5,
-	                overlaySize: 1,
+	                textBaseSize: 1,
+	                titleHeight: 0.17,
+	                titleBaseSize: 0.4,
 	                mainHeight:  0.95,
 	                mainWidth: 0.95,
 	                sparkMarginTop: 0.7,
@@ -180,7 +190,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    circumference: Math.PI * 1.5,
 	                    rotation: Math.PI * 0.5,
 	                    overlayHeight: 0.82,
-	                    overlayPosition: "right",
 	                },
 	                g4: {
 	                    base_obj: "donut",
@@ -205,7 +214,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    rotation: Math.PI * 0.5,
 	                    cutoutPercentage: 80,
 	                    overlayHeight: 0.83,
-	                    overlayPosition: "right",
 	                },
 	                h4: {
 	                    base_obj: "donut",
@@ -223,8 +231,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                s8: {  },
 	                s9: {  },
 	                a1: { 
-	                    overlayHeight: 0.3,
-	                    overlaySize: 1,
+	                    overlayHeight: 0.4,
+	                    textBaseSize: 1,
 	                    mainHeight:  1,
 	                    mainWidth: 1,
 	                    sparkMarginTop: 0.6,
@@ -232,8 +240,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    sparkWidth: 0.90,
 	                },
 	                a2: {
-	                    overlayHeight: 0.3,
-	                    overlaySize: 1,
+	                    overlayHeight: 0.4,
+	                    textBaseSize: 1,
 	                    mainHeight:  1,
 	                    mainWidth: 1,
 	                    sparkMarginTop: 0.56,
@@ -242,7 +250,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                },
 	                a3: { 
 	                    overlayHeight: 0.13,
-	                    overlaySize: 0.6,
+	                    textBaseSize: 0.6,
 	                    mainHeight: 0.5,
 	                    mainWidth: 1,
 	                    sparkMarginTop: 0.245,
@@ -251,7 +259,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                },
 	                a4: {
 	                    overlayHeight: 0.13,
-	                    overlaySize: 0.6,
+	                    textBaseSize: 0.6,
 	                    mainHeight: 0.5,
 	                    mainWidth: 1,
 	                    sparkMarginTop: 0.25,
@@ -321,18 +329,21 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            
 	            if (doAFullRedraw) {
-	                // TODO all dom variables should be prefixed with dolalr
 	                viz.$container_wrap.empty();
 	                viz.$errordiv = $('<div style="text-align:center; font-size: 16px;"></div>');
 	                viz.$canvas1 = $('<canvas class="number_display_viz-canvas_areachart"></canvas>');
-	                viz.$canvas2 = $('<canvas class="number_display_viz-canvas_gauge"></canvas>');
-	                viz.$overlay = $('<div class="number_display_viz-overlay"></div>');
+	                viz.$canvas2 = $('<canvas class="number_display_viz-canvas_main"></canvas>');
+	                viz.$overlayText = $('<div class="number_display_viz-overlay_text"></div>');
+	                viz.$overlayTitle = $('<div class="number_display_viz-overlay_title"></div>');
 	                viz.$wrapc1 = $('<div class="number_display_viz-wrap_areachart"></div>').append(viz.$canvas1);
-	                viz.$wrapc2 = $('<div class="number_display_viz-wrap_gauge"></div>');
+	                viz.$wrapc2 = $('<div class="number_display_viz-wrap_main"></div>');
 	                viz.$container_wrap.append(viz.$errordiv, viz.$wrapc2, viz.$wrapc1);
 
 	                if (viz.config.textshow === "yes") {
-	                    viz.$container_wrap.append(viz.$overlay);
+	                    viz.$container_wrap.append(viz.$overlayText);
+	                }
+	                if (viz.config.titletext !== "") {
+	                    viz.$container_wrap.append(viz.$overlayTitle);
 	                }
 
 	                if (viz.config.base_obj === "donut") {
@@ -628,28 +639,43 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            });
 	            viz.$canvas1[0].height = viz.size * viz.config.sparkHeight;
 	            viz.$canvas1[0].width = viz.size * viz.config.sparkWidth;
-
-	            var overlayPosition = {
-	                center: {"text-align": "center"},
-	                right: {"text-align": "right"},
-	                left: {"text-align": "left"}
-	            }
-	            var fontsize = (viz.size * 0.2 * (Number(viz.config.textsize) / 100) * viz.config.overlaySize);
-	            viz.$overlay.css({
-	                "font-size": fontsize + "px", 
-	                "margin-top": (viz.size * viz.config.overlayHeight - (fontsize * 0.5)) + "px", 
-	                "height" : viz.size - (viz.size * viz.config.overlayHeight - (fontsize * 0.5)) + "px",
-	                "width": (viz.size * viz.config.mainWidth * 0.85) + "px",
-	                "margin-left": ((viz.size * viz.config.mainWidth * 0.85) / 2 * -1) + "px", 
-	                "left": "50%"
-	            }).css(overlayPosition[viz.config.overlayPosition]).addClass(viz.config.textfont);
+	            // Value overlay
+	            var textfontsize = (viz.size * 0.2 * (Number(viz.config.textsize) / 100) * viz.config.textBaseSize);
+	            viz.$overlayText.css({
+	                "font-size": textfontsize + "px", 
+	                "margin-top": (viz.size * viz.config.overlayHeight - (textfontsize * 0.5)) + "px", 
+	                "height" : viz.size - (viz.size * viz.config.overlayHeight - (textfontsize * 0.5)) + "px",
+	                "width": (viz.size * viz.config.mainWidth * 0.82) + "px",
+	                "margin-left": ((viz.size * viz.config.mainWidth * 0.82) / 2 * -1) + "px", 
+	                "left": "50%",
+	                "text-align": viz.config.textalign,
+	            }).addClass(viz.config.textfont);
 
 	            if (viz.config.textdrop === "yes") {
-	                viz.$overlay.css({"text-shadow": "1px 1px 1px " + viz.config.textdropcolor});
+	                viz.$overlayText.css({"text-shadow": "1px 1px 1px " + viz.config.textdropcolor});
 	            }
-	            
+
 	            if (viz.config.textmode === "static") {
-	                viz.$overlay.css({"color": viz.config.textcolor});
+	                viz.$overlayText.css({"color": viz.config.textcolor});
+	            }
+	            // Subtitle!
+	            var titlefontsize = (viz.size * 0.2 * (Number(viz.config.titlesize) / 100) * viz.config.titleBaseSize);
+	            viz.$overlayTitle.css({
+	                "font-size": titlefontsize + "px", 
+	                "margin-top": (viz.size * viz.config.titleHeight - (titlefontsize * 0.5)) + "px", 
+	                "height" : viz.size - (viz.size * viz.config.titleHeight - (titlefontsize * 0.5)) + "px",
+	                "width": (viz.size * viz.config.mainWidth * 0.82) + "px",
+	                "margin-left": ((viz.size * viz.config.mainWidth * 0.82) / 2 * -1) + "px", 
+	                "left": "50%",
+	                "text-align": viz.config.titlealign,
+	            }).addClass(viz.config.titlefont).html(viz.config.titletext); // allow injection
+
+	            if (viz.config.titledrop === "yes") {
+	                viz.$overlayTitle.css({"text-shadow": "1px 1px 1px " + viz.config.titledropcolor});
+	            }
+
+	            if (viz.config.titlecolormode === "static") {
+	                viz.$overlayTitle.css({"color": viz.config.titlecolor});
 	            }
 
 	            if (doAFullRedraw) {
@@ -945,7 +971,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                }
 	                // Animate number on change
 	                // Need to have a previous value and both old and new need to be numbers for animation to work
-	                // TODO need to kill any currently running animations
+	                // TODO need to stop any currently running animations
 	                
 	                var overlay_now = Number(value_display);
 	                var overlay_prev = viz.overlay_prev;
@@ -953,7 +979,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                if (viz.config.textshow === "yes") {
 	                    if (! isNaN(overlay_prev) && ! isNaN(overlay_now) && overlay_prev !== overlay_now && viz.config.textprecision !== "nolimit") {
-	                        $({value: overlay_prev, target: viz.$overlay}).animate({value: overlay_now}, {
+	                        $({value: overlay_prev, target: viz.$overlayText}).animate({value: overlay_now}, {
 	                            duration: viz.config.textduration,
 	                            easing: "linear",
 	                            step: function(val, fx) {
@@ -961,13 +987,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            }
 	                        });
 	                    } else if (! isNaN(overlay_now)) {
-	                        viz.$overlay.html(viz.buildOverlay(overlay_now));
+	                        viz.$overlayText.html(viz.buildOverlay(overlay_now));
 	                    } else {
 	                        // html injection a-ok round these parts
-	                        viz.$overlay.html(value_display);
+	                        viz.$overlayText.html(value_display);
 	                    }
 	                    if (viz.config.textmode !== "static") {
-	                        viz.$overlay.css({"color": viz.getColorFromMode(viz.config.textmode, viz.config.textcolor, value_color)});
+	                        viz.$overlayText.css({"color": viz.getColorFromMode(viz.config.textmode, viz.config.textcolor, value_color)});
+	                    }
+	                }
+	                if (viz.config.titletext !== "") {
+	                    if (viz.config.titlecolormode !== "static") {
+	                        viz.$overlayTitle.css({"color": viz.getColorFromMode(viz.config.titlecolormode, viz.config.titlecolor, value_color)});
 	                    }
 	                }
 
@@ -1017,11 +1048,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            if (viz.config.textunit) {
 	                // intentially allowing html injection. yolo
-	                var unit = "<span class='number_display_viz-unit' style='font-size: " + viz.config.textunitsize + "%'>" + viz.config.textunit + "</span>";
-	                if (viz.config.textunitposition === "after") {
-	                    ret = ret + unit;
-	                } else {
+	                var unit = "<span class='number_display_viz-unit' style='font-size: " + viz.config.textunitsize + "%;" + (viz.config.textunitposition === "afterabs" ? "position:absolute;" : "") + "'>" + viz.config.textunit + "</span>";
+	                if (viz.config.textunitposition === "before") {
 	                    ret = unit + ret;
+	                } else {
+	                    ret = ret + unit;
 	                }
 	            }
 	            return ret;
