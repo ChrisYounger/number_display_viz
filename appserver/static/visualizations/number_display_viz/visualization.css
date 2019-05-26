@@ -4,14 +4,12 @@
     position: relative; 
 }
 .number_display_viz-overlay {
-    text-align: center;
     width: 100%;
     font-weight: bold;
     line-height: 1;
     position: absolute;
     z-index: 3;
     overflow: hidden;
-    text-shadow: 1px 1px 1px white;
 }
 .number_display_viz-unit {
     font-size: 50%;
