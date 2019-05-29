@@ -22,6 +22,13 @@
 .number_display_viz-unit {
     opacity: 0.7;
 }
+.number_display_viz-unit-afterabs {
+    position:absolute;
+}
+.number_display_viz-unit-under {
+    display: block;
+    line-height: 15%;
+}
 .number_display_viz-thin {
     font-weight: normal;
 }

@@ -56,8 +56,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    chartjs
 	) {
 
-	    // TODO in Gauge3, move the sparkline up
-	    // TODO if there is no sparkline, move the overlay
 	    // TODO text shadow on overlay
 	    // TODO impliment spinners
 	    // TODO impliment boxes
@@ -157,123 +155,41 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                shapebordercolor: "#FFFFFF",
 	                shapebordersize: "1",
 
-	                // style overrides that can't be set via UI
 	                base_obj: "svg",
 	                circumference: Math.PI + 0.6,
 	                rotation: -Math.PI - 0.3,
-	                cutoutPercentage: 50,
-	                overlayHeight: 0.5,
-	                textBaseSize: 1,
-	                titleHeight: 0.17,
+	                thickness: 50,
+	                textalignv: 50,
+	                titlealignv: 20,
 	                titleBaseSize: 0.4,
 	                mainHeight:  0.95,
 	                mainWidth: 0.95,
-	                sparkMarginTop: 0.7,
-	                sparkHeight: 0.3,
-	                sparkWidth: 1,
+	                sparkalign: 5,
+	                sparkalignv: 70,
+	                sparkHeight: 30,
+	                sparkWidth: 100,
 	                speedMultiplier: 1,
 	            };
 
 	            var style_overrides = {
 	                g1: {
 	                    base_obj: "donut",
-	                    overlayHeight: 0.63,
 	                },
 	                g2: {
 	                    base_obj: "donut",
 	                    circumference: Math.PI,
 	                    rotation: -Math.PI,
-	                    overlayHeight: 0.67,
 	                },
 	                g3: {
 	                    base_obj: "donut",
 	                    circumference: Math.PI * 1.5,
 	                    rotation: Math.PI * 0.5,
-	                    overlayHeight: 0.82,
 	                },
 	                g4: {
 	                    base_obj: "donut",
 	                    circumference: Math.PI * 2,
 	                    rotation: Math.PI * 1.5,
-	                },
-	                h1: {
-	                    base_obj: "donut",
-	                    cutoutPercentage: 80,
-	                    overlayHeight: 0.63,
-	                },
-	                h2: {
-	                    base_obj: "donut",
-	                    circumference: Math.PI,
-	                    rotation: -Math.PI,
-	                    cutoutPercentage: 80,
-	                    overlayHeight: 0.67,
-	                },
-	                h3: {
-	                    base_obj: "donut",
-	                    circumference: Math.PI * 1.5,
-	                    rotation: Math.PI * 0.5,
-	                    cutoutPercentage: 80,
-	                    overlayHeight: 0.83,
-	                },
-	                h4: {
-	                    base_obj: "donut",
-	                    circumference: Math.PI * 2,
-	                    rotation: Math.PI * 1.5,
-	                    cutoutPercentage: 80,
-	                },
-	                s1: {  },
-	                s2: {  },
-	                s3: {  },
-	                s4: {  },
-	                s5: {  },
-	                s6: {  },
-	                s7: {  },
-	                s8: {  },
-	                s9: {  },
-	                a1: { 
-	                    overlayHeight: 0.4,
-	                    textBaseSize: 1,
-	                    mainHeight:  1,
-	                    mainWidth: 1,
-	                    sparkMarginTop: 0.6,
-	                    sparkHeight: 0.35,
-	                    sparkWidth: 0.90,
-	                },
-	                a2: {
-	                    overlayHeight: 0.4,
-	                    textBaseSize: 1,
-	                    mainHeight:  1,
-	                    mainWidth: 1,
-	                    sparkMarginTop: 0.56,
-	                    sparkHeight: 0.35,
-	                    sparkWidth: 0.7,
-	                },
-	                a3: { 
-	                    overlayHeight: 0.13,
-	                    textBaseSize: 0.6,
-	                    mainHeight: 0.5,
-	                    mainWidth: 1,
-	                    sparkMarginTop: 0.245,
-	                    sparkHeight: 0.3,
-	                    sparkWidth: 0.8,
-	                },
-	                a4: {
-	                    overlayHeight: 0.13,
-	                    textBaseSize: 0.6,
-	                    mainHeight: 0.5,
-	                    mainWidth: 1,
-	                    sparkMarginTop: 0.25,
-	                    sparkHeight: 0.3,
-	                    sparkWidth: 0.8,
-	                },
-	                a5: {  },
-	                a6: {  },
-	                a7: {  },
-	                a8: {  },
-	                a9: {  },
-	                a10: {  },
-	                a11: {  },
-
+	                }
 	            };
 	            // Override defaults with selected items from the UI
 	            for (var opt in config) {
@@ -627,29 +543,44 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            } else if (viz.config.sparkorder === "bg") {
 	                viz.$wrapc2.css("z-index", 2);
 	            }
-
-	            viz.$wrapc1.css({
-	                "margin-top": (viz.size * viz.config.sparkMarginTop) + "px", 
-	                "height": (viz.size * viz.config.sparkHeight) + "px", 
-	                "width": (viz.size * viz.config.sparkWidth) + "px"
-	            });
+	            
+	            viz.height = (viz.size * viz.config.mainHeight);
+	            viz.width = (viz.size * viz.config.mainWidth);
 	            viz.$wrapc2.css({
-	                "height": (viz.size * viz.config.mainHeight) + "px", 
-	                "width": (viz.size * viz.config.mainWidth) + "px"
+	                "height": viz.height + "px", 
+	                "width": viz.width + "px"
 	            });
-	            viz.$canvas1[0].height = viz.size * viz.config.sparkHeight;
-	            viz.$canvas1[0].width = viz.size * viz.config.sparkWidth;
+	            
+	            // Sparkline
+	            viz.heightSpark = viz.height * viz.config.sparkHeight;// * 0.01;
+	            viz.widthSpark = viz.width * viz.config.sparkWidth ;// * 0.01;
+	            viz.$canvas1[0].height = viz.heightSpark;
+	            viz.$canvas1[0].width = viz.widthSpark;
+	            viz.$wrapc1.css({
+	                "top": (viz.height * (viz.config.sparkalignv / 100)) + "px",
+	                "left": (-1 * (viz.widthSpark  + viz.width) / 2) + (viz.width * (viz.config.sparkalign / 100)) + "px",
+	                "height": viz.heightSpark + "px",
+	                "width": viz.widthSpark + "px",
+	            });
+	            
 	            // Value overlay
-	            var textfontsize = (viz.size * 0.2 * (Number(viz.config.textsize) / 100) * viz.config.textBaseSize);
+	            var textfontsize = (viz.height * 0.2 * (Number(viz.config.textsize) / 100));
 	            viz.$overlayText.css({
 	                "font-size": textfontsize + "px", 
-	                "margin-top": (viz.size * viz.config.overlayHeight - (textfontsize * 0.5)) + "px", 
-	                "height" : viz.size - (viz.size * viz.config.overlayHeight - (textfontsize * 0.5)) + "px",
-	                "width": (viz.size * viz.config.mainWidth * 0.82) + "px",
-	                "margin-left": ((viz.size * viz.config.mainWidth * 0.82) / 2 * -1) + "px", 
+	                "line-height": (textfontsize * 1.1) + "px", 
+	                "margin-top": (viz.height * (viz.config.textalignv / 100) - (textfontsize * 0.5)) + "px", 
+	                "height" : viz.height - (viz.height * (viz.config.textalignv / 100) - (textfontsize * 0.5)) + "px",
+	                "width": viz.width + "px",
+	                "margin-left": (viz.width / 2 * -1) + "px", 
 	                "left": "50%",
 	                "text-align": viz.config.textalign,
 	            }).addClass(viz.config.textfont);
+
+	            if (viz.config.textalign === "left") {
+	                viz.$overlayText.css({"padding-left": viz.width * 0.1 + "px"});
+	            } else if (viz.config.textalign === "right") {
+	                viz.$overlayText.css({"padding-right": viz.width * 0.1 + "px"});
+	            }
 
 	            if (viz.config.textdrop === "yes") {
 	                viz.$overlayText.css({"text-shadow": "1px 1px 1px " + viz.config.textdropcolor});
@@ -659,17 +590,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                viz.$overlayText.css({"color": viz.config.textcolor});
 	            }
 	            // Subtitle!
-	            var titlefontsize = (viz.size * 0.2 * (Number(viz.config.titlesize) / 100) * viz.config.titleBaseSize);
+	            var titlefontsize = (viz.height * 0.2 * (Number(viz.config.titlesize) / 100) * viz.config.titleBaseSize);
 	            viz.$overlayTitle.css({
 	                "font-size": titlefontsize + "px", 
-	                "margin-top": (viz.size * viz.config.titleHeight - (titlefontsize * 0.5)) + "px", 
-	                "height" : viz.size - (viz.size * viz.config.titleHeight - (titlefontsize * 0.5)) + "px",
-	                "width": (viz.size * viz.config.mainWidth * 0.82) + "px",
-	                "margin-left": ((viz.size * viz.config.mainWidth * 0.82) / 2 * -1) + "px", 
+	                "margin-top": (viz.height * (viz.config.titlealignv / 100) - (titlefontsize * 0.5)) + "px", 
+	                "height" : viz.height - (viz.height * (viz.config.titlealignv / 100) - (titlefontsize * 0.5)) + "px",
+	                "width": viz.width + "px",
+	                "margin-left": (viz.width / 2 * -1) + "px", 
 	                "left": "50%",
 	                "text-align": viz.config.titlealign,
 	            }).addClass(viz.config.titlefont).html(viz.config.titletext); // allow injection
 
+	            if (viz.config.textalign === "left") {
+	                viz.$overlayTitle.css({"padding-left": viz.width * 0.1 + "px"});
+	            } else if (viz.config.textalign === "right") {
+	                viz.$overlayTitle.css({"padding-right": viz.width * 0.1 + "px"});
+	            }
 	            if (viz.config.titledrop === "yes") {
 	                viz.$overlayTitle.css({"text-shadow": "1px 1px 1px " + viz.config.titledropcolor});
 	            }
@@ -690,7 +626,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            labels: []
 	                        },
 	                        options: {
-	                            cutoutPercentage: viz.config.cutoutPercentage,
+	                            cutoutPercentage: (100 - viz.config.thickness),
 	                            circumference: viz.config.circumference,
 	                            rotation: viz.config.rotation,
 	                            maintainAspectRatio: false,
@@ -1048,7 +984,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            if (viz.config.textunit) {
 	                // intentially allowing html injection. yolo
-	                var unit = "<span class='number_display_viz-unit' style='font-size: " + viz.config.textunitsize + "%;" + (viz.config.textunitposition === "afterabs" ? "position:absolute;" : "") + "'>" + viz.config.textunit + "</span>";
+	                var unit = "<span class='number_display_viz-unit number_display_viz-unit-" + viz.config.textunitposition + "' style='font-size: " + viz.config.textunitsize + "%;'>" + (viz.config.textunitposition === "under" ? "<br />" : "") + viz.config.textunit + "</span>";
 	                if (viz.config.textunitposition === "before") {
 	                    ret = unit + ret;
 	                } else {
