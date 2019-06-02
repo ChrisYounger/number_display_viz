@@ -149,10 +149,19 @@
 
 
 <form class="splunk-formatter-section" section-label="Sparkline">
-        <splunk-control-group label="Visibility">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparkshow" value="yes">
-                        <option value="yes">Show</option>
+        <splunk-control-group label="Display">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparkorder" value="bg">
+                        <option value="fg">Foreground</option>
+                        <option value="bg">Background</option>
                         <option value="no">Hide</option>
+                </splunk-radio-input>
+        </splunk-control-group>
+
+        <splunk-control-group label="Type">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparkstyle" value="area">
+                        <option value="area">Area</option>
+                        <option value="line">Line</option>
+                        <option value="column">Column</option>
                 </splunk-radio-input>
         </splunk-control-group>
 
@@ -196,24 +205,9 @@
 
         <splunk-control-group label="Limits">
                 <span style="display:inline-block; margin:5px;">min</span>
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkmin" value="" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkmin" value="0" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px;">max</span>
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkmax" value="" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
-        </splunk-control-group>
-
-        <splunk-control-group label="Type">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparkstyle" value="area">
-                        <option value="area">Area</option>
-                        <option value="line">Line</option>
-                        <option value="column">Column</option>
-                </splunk-radio-input>
-        </splunk-control-group>
-
-        <splunk-control-group label="Order">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparkorder" value="bg">
-                        <option value="fg">Foreground</option>
-                        <option value="bg">Background</option>
-                </splunk-radio-input>
         </splunk-control-group>
 
         <splunk-control-group label="Hori. position" help="As percentage of width.">
@@ -226,15 +220,16 @@
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
 
+        <splunk-control-group label="Width" help="As percentage of width.">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkWidth" value="90" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
+        </splunk-control-group>
+        
         <splunk-control-group label="Height" help="As percentage of height.">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkHeight" value="30" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
 
-        <splunk-control-group label="Width" help="As percentage of width.">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.sparkWidth" value="90" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
-                <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
-        </splunk-control-group>
 </form>
 
 
@@ -300,11 +295,14 @@
                 </splunk-select>
         </splunk-control-group>
 
-        <splunk-control-group label="Add thousands seperators">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textthousands" value="no">
-                        <option value="yes">Yes</option>
-                        <option value="no">No</option>
-                </splunk-radio-input>
+        <splunk-control-group label="Processing">
+                <splunk-select name="{{VIZ_NAMESPACE}}.textprocessing" value="">
+                        <option value="">None</option>
+                        <option value="thou">Add thousands seperators</option>
+                        <option value="abr2">Abreviate with up to 1 decimal</option>
+                        <option value="abr3">Abreviate with up to 2 decimals</option>
+                        <option value="abr4">Abreviate with up to 3 decimals</option>
+                </splunk-select>
         </splunk-control-group>
 
         <splunk-control-group label="Unit">
@@ -328,10 +326,12 @@
         <splunk-control-group label="Font">
                 <splunk-select name="{{VIZ_NAMESPACE}}.textfont" value="">
                         <option value="">Bold</option>
-                        <option value="number_display_viz-thin">Thin</option>
+                        <option value="number_display_viz-thin">Regular</option>
                         <option value="number_display_viz-gf1">Teko</option>
                         <option value="number_display_viz-gf2">Montserrat</option>
                         <option value="number_display_viz-gf3">Luckiest Guy</option>
+                        <option value="number_display_viz-gf4">Roboto 300</option>
+                        <option value="number_display_viz-gf5">Roboto 400</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -397,10 +397,12 @@
         <splunk-control-group label="Font">
                 <splunk-select name="{{VIZ_NAMESPACE}}.titlefont" value="">
                         <option value="">Bold</option>
-                        <option value="number_display_viz-thin">Thin</option>
+                        <option value="number_display_viz-thin">Regular</option>
                         <option value="number_display_viz-gf1">Teko</option>
                         <option value="number_display_viz-gf2">Montserrat</option>
                         <option value="number_display_viz-gf3">Luckiest Guy</option>
+                        <option value="number_display_viz-gf4">Roboto 300</option>
+                        <option value="number_display_viz-gf5">Roboto 400</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -456,13 +458,11 @@
 
 <form class="splunk-formatter-section" section-label="Spinners">
         </splunk-control-group>
-        <splunk-control-group label="Duration at min" help="Larger is slower">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmin" value="10" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
-                <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
+        <splunk-control-group label="RPM when min">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmin" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
         </splunk-control-group>
-        <splunk-control-group label="Duration at max">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmax" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
-                <span style="display:inline-block; margin:5px 15px 5px 5px;">sec</span>
+        <splunk-control-group label="RPM when max">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmax" value="20" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
         </splunk-control-group>
 </form>
 
