@@ -14,7 +14,8 @@
                         <option value="s7">Spinner - small dash</option>
                         <option value="s8">Spinner - pc fan</option>
                         <option value="s9">Spinner - fan</option>
-                        <option value="a0">Shape - fill</option>
+                        <option value="a12">Shape - fill 1</option>
+                        <option value="a13">Shape - fill 2</option>
                         <option value="a1">Shape - square 1</option>
                         <option value="a2">Shape - Square 2</option>
                         <option value="a3">Shape - rectangle 1</option>
@@ -30,7 +31,13 @@
         </splunk-control-group>
 
         <splunk-control-group label="Size" help="Leave blank to auto-fit available space">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.size" value="" style="width: 64px;  vertical-align:top; display:inline-block; flex: none; margin-right: 26px;"></splunk-text-input>
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.size" value="" style="width: 64px;  vertical-align:top; display:inline-block; flex: none;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">px</span>
+        </splunk-control-group>
+
+        <splunk-control-group label="Spacing" help="Horizontal gap around elements as a percentage of width">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.padding" value="10" style="width: 64px;  vertical-align:top; display:inline-block; flex: none;"></splunk-text-input>
+                <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
 
         <splunk-control-group label="Limits">

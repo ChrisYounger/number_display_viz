@@ -12,9 +12,6 @@ function(
 ) {
 
     // TODO add new type that fills all available space
-    // todo ability to pass in the primary color and secondary color
-    // ablity to pass in icons
-    // Thresholds and limits should be overridable in the query
     var vizObj = {
         initialize: function() {
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -103,6 +100,7 @@ function(
                 colorsecondary: "#000000",
                 shapebordercolor: "#FFFFFF",
                 shapebordersize: "1",
+                padding: "10",
 
                 base_obj: "svg",
                 circumference: Math.PI + 0.6,
@@ -137,7 +135,9 @@ function(
                     base_obj: "donut",
                     circumference: Math.PI * 2,
                     rotation: Math.PI * 1.5,
-                }
+                },
+                a3: {mainHeight:  0.5},
+                a4: {mainHeight:  0.5},
             };
             // Override defaults with selected items from the UI
             for (var opt in config) {
@@ -258,16 +258,6 @@ console.log(viz.data.fields[0].name);
             }
 
             if (doAFullRedraw) {
-                // Figure out the size
-                if (viz.config.size > 0) {
-                    viz.size = viz.config.size;
-                } else {
-                    // TODO how to set size
-                    viz.size = Math.min(viz.$container_wrap.height(), viz.$container_wrap.width()) - 10;
-                }
-            
-                viz.$container_wrap.empty();
-
                 viz.item = [];
             }
 
@@ -297,14 +287,12 @@ console.log(viz.data.fields[0].name);
                     } else {
                         viz.item.push(item);
                     }
-
                     item.overtimedata = [];
                     item.title = viz.data.fields[j].name;
                     for (i = 1; i < viz.data.rows.length; i++) {
                         item.overtimedata.push(viz.data.rows[i][j]);
                     }
                     item.value = item.overtimedata[item.overtimedata.length - 1]
-                    viz.doDrawItem(item, doAFullRedraw);
                 }
             } else {
                 for (i = 0; i < viz.data.rows.length; i++) {
@@ -365,8 +353,36 @@ console.log(viz.data.fields[0].name);
                             }
                         }
                     }
-                    viz.doDrawItem(item, doAFullRedraw);
                 }
+            }
+            if (doAFullRedraw) {
+                // Figure out the size
+                // If "full" shape is selected, we force to one row
+                if (viz.config.style === "a12" || viz.config.style === "a13") {
+                    // If we are auto detecting size, then only use one row viz.$container_wrap.width() viz.item.length viz.config.padding
+                    viz.size = viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100));
+                    viz.$container_wrap.css("flex-wrap","nowrap");
+                    var desired_height = viz.$container_wrap.height();
+                    if (viz.config.size > 0) {
+                        desired_height = viz.config.size;
+                    }
+                    // If "full" shape is selected, need to set unusual item size. need to set height as a multiple of size (which is always width)
+                    viz.config.mainHeight = desired_height / viz.size;
+                    
+                } else if (viz.config.size > 0) {
+                    viz.size = viz.config.size;
+                    viz.$container_wrap.css("flex-wrap","wrap");
+
+                } else {
+                    // If we are auto detecting size, then only use one row 
+                    viz.size = Math.min(viz.$container_wrap.height(), viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100))) ;
+                    viz.$container_wrap.css("flex-wrap","nowrap");
+
+                }
+                viz.$container_wrap.empty();
+            }
+            for (i = 0; i < viz.item.length; i++) {
+                viz.doDrawItem(viz.item[i], doAFullRedraw);
             }
         },
 
@@ -394,10 +410,15 @@ console.log(viz.data.fields[0].name);
                 viz.$container_wrap.append(item.$container);
 
                 item.svgTextureId = "texture-" + viz.instance_id + "-" + item.id;
-                item.$container.css({
-                    //"height": item.height + "px", 
-                    "width": item.width + "px"
-                });
+                // item.$container.css({
+                //     "width": item.width + "px"
+                // });
+                
+                if (viz.config.size > 0) {
+                    var spacing = (viz.config.size * (viz.config.padding / 100)) / 2;
+                    item.$container.css({"margin-left": spacing + "px", "margin-right": spacing + "px"});
+                }
+                
 
                 if (viz.config.textshow === "yes") {
                     item.$container.append(item.$overlayText);
@@ -574,6 +595,18 @@ console.log(viz.data.fields[0].name);
                         '<path d="m304 232c0 39.765625-32.234375 72-72 72s-72-32.234375-72-72 32.234375-72 72-72 72 32.234375 72 72zm0 0" fill="#bec3d1" class="number_display_viz-fill_primary" />'+
                         '</svg>').appendTo(item.$wrapc2);
  
+                    } else if (viz.config.style === "a12") { // fill
+console.log("viz.config.mainHeight is ", viz.config.mainHeight);
+                        item.svgViewbox = "0 0 " + viz.size + " " + (viz.size * viz.config.mainHeight); // width height viz.config.mainHeight = desired_height / viz.size
+                        item.svgString = '<rect x="5" y="5" width="' + (viz.size - 10) + '" height="' + (viz.size * viz.config.mainHeight - 10) + '" class="number_display_viz-shape" />';
+
+                    } else if (viz.config.style === "a13") { // fill
+                        var svgaheight = (viz.size * viz.config.mainHeight);
+                        var svgaradius = (viz.size * 0.025);
+                        item.svgViewbox = "0 0 " + viz.size + " " + (viz.size * viz.config.mainHeight); // width height viz.config.mainHeight = desired_height / viz.size
+                        item.svgString = '<path d="M ' + (5 + svgaradius) + ' 5 h ' + (viz.size - 10 - 2 * svgaradius) + ' a ' + svgaradius + ',' + svgaradius + ' 0 0 1 ' + svgaradius + ',' + svgaradius + ' v' + (svgaheight - 10 - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 -' + svgaradius + ',' + svgaradius + ' h-' + (viz.size - 10 - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 -' + svgaradius + ',-' + svgaradius + ' v-' + (svgaheight - 10 - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 ' + svgaradius + ',-' + svgaradius + ' z" class="number_display_viz-shape"></path>';
+
+
                     } else if (viz.config.style === "a1") { // square
                         item.svgViewbox = "0 0 100 100";
                         item.svgString = '<rect x="5" y="5" width="90" height="90" class="number_display_viz-shape" />';
@@ -589,7 +622,6 @@ console.log(viz.data.fields[0].name);
                     } else if (viz.config.style === "a4") { // rect 2
                         item.svgViewbox = "0 0 100 50";
                         item.svgString = '<path d="M 10 2.5 h 80 a 2.5,2.5 0 0 1 2.5,2.5 v40 a2.5,2.5 0 0 1 -2.5,2.5 h-80 a2.5,2.5 0 0 1 -2.5,-2.5 v-40 a2.5,2.5 0 0 1 2.5,-2.5 z" class="number_display_viz-shape"></path>';
-                        //item.svgString = '<path d="M0,10 h240 a20,20 0 0 1 20,20 v100 a20,20 0 0 1 -20,20 h-240 a20,20 0 0 1 -20,-20 v-100 a20,20 0 0 1 20,-20 z" class="number_display_viz-shape"></path>';
 
                     } else if (viz.config.style === "a5") { // circle
                         item.svgViewbox = "0 0 100 100";
