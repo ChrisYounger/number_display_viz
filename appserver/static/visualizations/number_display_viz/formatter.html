@@ -500,14 +500,31 @@
                 </splunk-color-picker>
         </splunk-control-group>
 
-        <splunk-control-group label="Border size ">
-                <splunk-text-input name="{{VIZ_NAMESPACE}}.shapebordersize" value="1" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
-                <splunk-color-picker name="{{VIZ_NAMESPACE}}.shapebordercolor" value="#FFFFFF" type="splunkCategorical" style="vertical-align:top; display:inline-block; margin-top: -2px;">
+        <splunk-control-group label="Border color">
+                <splunk-select name="{{VIZ_NAMESPACE}}.shapebordercolormode" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
+                        <option value="static">Manual</option>
+                        <option value="lighter3">Threshold color (40% lighter)</option>
+                        <option value="lighter2">Threshold color (20% lighter)</option>
+                        <option value="lighter1">Threshold color (10% lighter)</option>
+                        <option value="auto">Threshold color</option>
+                        <option value="darker1">Threshold color (10% darker)</option>
+                        <option value="darker2">Threshold color (20% darker)</option>
+                        <option value="darker3">Threshold color (40% darker)</option>
+                </splunk-select>
+                <splunk-color-picker name="{{VIZ_NAMESPACE}}.shapebordercolor" value="#FFFFFF" type="splunkCategorical" style="vertical-align:top; display:inline-block; margin-top: -2px; ">
                         <splunk-color>#F2F4F5</splunk-color>
                         <splunk-color>#5C6773</splunk-color>
                         <splunk-color>#ffffff</splunk-color>
                         <splunk-color>#000000</splunk-color>
                 </splunk-color-picker>
+        </splunk-control-group>
+
+        <splunk-control-group label="Border size ">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.shapebordersize" value="1" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
+        </splunk-control-group>
+
+        <splunk-control-group label="Pulses per min">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pulserate" value="2" style="width: 32px; vertical-align:top; display:inline-block; flex:none; margin-right:26px;"></splunk-text-input>
         </splunk-control-group>
 </form>
 

@@ -24,10 +24,11 @@
 .number_display_viz-overlay_title {
     width: 100%;
     font-weight: bold;
-    line-height: 1;
+    line-height: 1.1;
     position: absolute;
     z-index: 3;
     overflow: hidden;
+    padding-bottom: 4px;
 }
 .number_display_viz-unit {
     opacity: 0.7;
@@ -69,4 +70,9 @@
     width:100%;
     height: 100%;
     z-index: 1;
+}
+
+@keyframes number_display_viz-pulse {
+  0%   {transform: scale(1);  opacity: 0.25}
+  100% {transform: scale(1.2); opacity: 0;}
 }
