@@ -71,8 +71,3 @@
     height: 100%;
     z-index: 1;
 }
-
-@keyframes number_display_viz-pulse {
-  0%   {transform: scale(1);  opacity: 0.25}
-  100% {transform: scale(1.2); opacity: 0;}
-}

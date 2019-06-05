@@ -56,6 +56,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    Chart
 	) {
 
+	// TODO shape textures arent changing color
+	// TODO the setInterval needs to be cleared on reload etc.
 	    var vizObj = {
 	        initialize: function() {
 	            SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -465,7 +467,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        item.$canvas2.appendTo(item.$wrapc2);
 
 	                } else {
-	                    if (viz.config.style === "s1") {
+	                    if (viz.config.style === "s0") {
+
+	                        // From https://loading.io/spinner/dash-ring/
+	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
+	                        '<circle cx="50" cy="50" r="47" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="226" stroke-linecap="round" stroke-width="1" transform="rotate(0 50 50)"><animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform></circle>'+
+	                        '<circle cx="50" cy="50" r="43" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="44" stroke-linecap="round" stroke-width="1" transform="rotate(90 50 50)"><animateTransform attributeName="transform" type="rotate" values="360 50 50;0 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform></circle>'+
+	                        '</svg>').appendTo(item.$wrapc2);
+	                    } else if (viz.config.style === "s1") {
 
 	                        // From https://loading.io/spinner/dash-ring/
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
@@ -726,6 +735,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    item.$svgShape.attr("fill", "url(#" + item.svgTextureId + ")");
 	                    item.$svg.appendTo(item.$wrapc2);
 
+	                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">'+ item.svgGradient + item.svgString + '</svg>');
+	                    item.$svgPulseShape = item.$svgPulse.find(".number_display_viz-shape");
+	                    item.$svgPulseShape.attr("fill", "url(#" + item.svgTextureId + ")");
+	                    item.$svgPulse.prependTo(item.$wrapc2);
+
+	                    item.$svgFillPrimary = item.$svg.find(".number_display_viz-fill_primary").add(item.$svgPulse.find(".number_display_viz-fill_primary"));
+	                    item.$svgFillSecondary = item.$svg.find(".number_display_viz-fill_secondary").add(item.$svgPulse.find(".number_display_viz-fill_secondary"));
+	                    item.$svgStrokePrimary = item.$svg.find(".number_display_viz-stroke_primary").add(item.$svgPulse.find(".number_display_viz-stroke_primary"));
+	                    item.$svgStrokeSecondary = item.$svg.find(".number_display_viz-stroke_secondary").add(item.$svgPulse.find(".number_display_viz-stroke_secondary"));
+	                    item.$svgStopPrimary = item.$svg.find(".number_display_viz-stop_primary").add(item.$svgPulse.find(".number_display_viz-stop_primary"));
+	                    item.$svgStopSecondary = item.$svg.find(".number_display_viz-stop_secondary").add(item.$svgPulse.find(".number_display_viz-stop_secondary"));
+
+	                    item.$svgSpeed1 = item.$svg.find(".number_display_viz-speed_1x");
+	                    item.$svgSpeed05 = item.$svg.find(".number_display_viz-speed_05x");
+	                    item.$svgSpeed15 = item.$svg.find(".number_display_viz-speed_15x");
+	                    
 	                    // Add the drop shadow to shapes
 	                    if (viz.config.shapeshadow === "yes") { 
 	                        item.$svg.css("filter", "drop-shadow(" + tinycolor(viz.config.shapedropcolor).setAlpha(0.5).toRgbString() + " 0px 0px " + Math.min(10, (viz.size * viz.config.mainHeight * 0.03)) + "px)");
@@ -994,14 +1019,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Add the border to shapes
 	            if (viz.config.style.substr(0,1) === "a" && viz.config.shapebordersize > 0) {
 	                item.$svgShape.attr("stroke-width", viz.config.shapebordersize + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color));
+	                item.$svgPulseShape.attr("stroke-width", viz.config.shapebordersize + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color));
 	            }
 
 	            // Add the pulse animation
 	            // TODO rate not correct
 	            if (viz.config.style.substr(0,1) === "a" && viz.config.pulserate > 0) {
-	                item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="animation: number_display_viz-pulse 1.5s infinite ease-out; position: absolute; top: 0; left: 0;">'+ item.svgString + '</svg>');
-	                item.$svgPulse.find(".number_display_viz-shape").attr("stroke-width", (viz.config.shapebordersize > 0) ? viz.config.shapebordersize : "1" + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color)).attr("fill","transparent");
-	                item.$svgPulse.prependTo(item.$wrapc2);
+	                
+	                // get the height so it forces a draw
+	                setInterval(function(){ 
+	                    item.$svgPulse.one('transitionend webkitTransitionEnd oTransitionEnd', function () {
+	                        item.$svgPulse.css({"transition": "none"});
+	                        // Read the height to force flush
+	                        item.$svgPulse.height();
+	                        item.$svgPulse.css({"transition": "transform,opacity 2s,2s","opacity":"0.25","transform":"scale(1)"});
+	                    });
+	                    item.$svgPulse.css({"opacity":"0","transform":"scale(1.2)"}); 
+	                }, 2500);
+
 	            }
 	            
 	            var value_color_primary = viz.getColorFromMode(viz.config.colorprimarymode, viz.config.colorprimary, value_color);
@@ -1047,16 +1082,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    speed = (speed === 0) ? 9999999 : 60 / speed;
 	                }
 
-	                item.$svg.find(".number_display_viz-fill_primary").attr("fill", value_color_primary);
-	                item.$svg.find(".number_display_viz-fill_secondary").attr("fill", value_color_secondary);
-	                item.$svg.find(".number_display_viz-stroke_primary").attr("stroke", value_color_primary);
-	                item.$svg.find(".number_display_viz-stroke_secondary").attr("stroke", value_color_secondary);
-	                item.$svg.find(".number_display_viz-stop_primary").attr("stop-color", value_color_primary);
-	                item.$svg.find(".number_display_viz-stop_secondary").attr("stop-color", value_color_secondary);
+	                item.$svgFillPrimary.attr("fill", value_color_primary);
+	                item.$svgFillSecondary.attr("fill", value_color_secondary);
+	                item.$svgStrokePrimary.attr("stroke", value_color_primary);
+	                item.$svgStrokeSecondary.attr("stroke", value_color_secondary);
+	                item.$svgStopPrimary.attr("stop-color", value_color_primary);
+	                item.$svgStopSecondary.attr("stop-color", value_color_secondary);
 
-	                item.$svg.find(".number_display_viz-speed_1x").attr("dur", speed + "s");
-	                item.$svg.find(".number_display_viz-speed_05x").attr("dur", (speed * 0.5) + "s");
-	                item.$svg.find(".number_display_viz-speed_15x").attr("dur", (speed * 1.5) + "s");
+	                item.$svgSpeed1.attr("dur", speed + "s");
+	                item.$svgSpeed05.attr("dur", (speed * 0.5) + "s");
+	                item.$svgSpeed15.attr("dur", (speed * 1.5) + "s");
 	            }
 	            
 	            if (viz.config.sparkorder !== "no") {
@@ -1134,7 +1169,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                ret = Math.round(val * 100000) / 100000;
 	            }
 
-	            if (viz.config.textprocessing === "abr2") {
+	            if (viz.config.textprocessing === "abr1") {
+	                ret = viz.abbreviate(ret, 1);
+	            } else if (viz.config.textprocessing === "abr2") {
 	                ret = viz.abbreviate(ret, 2);
 	            } else if (viz.config.textprocessing === "abr3") {
 	                ret = viz.abbreviate(ret, 3);
