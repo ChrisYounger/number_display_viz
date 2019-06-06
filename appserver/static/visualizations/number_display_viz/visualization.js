@@ -56,8 +56,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	    Chart
 	) {
 
-	// TODO shape textures arent changing color
-	// TODO the setInterval needs to be cleared on reload etc.
 	    var vizObj = {
 	        initialize: function() {
 	            SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -148,7 +146,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                shapebordercolor: "#FFFFFF",
 	                shapebordersize: "1",
 	                padding: "10",
-	                pulserate: 2,
+	                pulserate: 4,
 
 	                circumference: Math.PI + 0.6,
 	                rotation: -Math.PI - 0.3,
@@ -212,7 +210,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        doDraw: function(){
 	            var viz = this;
-	            var item;
 	            // Dont draw unless this is a real element under body
 	            if (! viz.$container_wrap.parents().is("body")) {
 	                return;
@@ -235,7 +232,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    // At least two columns of data
 	                    if (currentRow.length > 1) { 
 	                        // Special case that looks like it is probably data from |timechart command
-	                        if (viz.data.fields[0].name === "_time") {
+	                        if (viz.data.fields[0].name === "_time" && viz.data.rows.length > 3) {
 	                            datamode = 1;
 	                        
 	                        // Format: Sparkline, Value?
@@ -249,6 +246,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        // Format: Label, Sparkline, Value?
 	                        } else if (! Array.isArray(currentRow[0]) && Array.isArray(currentRow[1]) && currentRow[1][0] === "##__SPARKLINE__##") {
 	                            datamode = 4;
+	                            viz.drilldown_field = viz.data.fields[0].name;
 	                            // check if there is another column that we can use for the value
 	                            if (currentRow.length > 2 && ! Array.isArray(currentRow[2])) {
 	                                datamode = 5;
@@ -256,10 +254,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            
 	                        // Format: Label, Value, Sparkline
 	                        } else if (currentRow.length > 2 && ! Array.isArray(currentRow[0]) && ! Array.isArray(currentRow[1]) && Array.isArray(currentRow[2]) && currentRow[2][0] === "##__SPARKLINE__##") {
+	                            viz.drilldown_field = viz.data.fields[0].name;
 	                            datamode = 6;
 
 	                        // Format: Label, Value
 	                        } else if (! Array.isArray(currentRow[0]) && ! Array.isArray(currentRow[1])) {
+	                            viz.drilldown_field = viz.data.fields[0].name;
 	                            datamode = 7;
 
 	                        } else {
@@ -279,8 +279,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Can't continue becuase of data issues
 	            if (! viz.data.rows.length || datamode === 0) {
 	                viz.$container_wrap.empty();
-	                var $errordiv = $('<div style="text-align:center; font-size: 16px; display: block;"></div>');
-	                $errordiv.html("Unexpected data format. ")
+	                var $errordiv = $('<div style="text-align:center; font-size: 16px; display: block;">Unexpected data format.</div>');
 	                viz.$container_wrap.append($errordiv);
 	                return;
 	            }
@@ -289,8 +288,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                doAFullRedraw = true;
 	                viz.currentRows = viz.data.rows.length;
 	            }
+	            var item, i, j;
 
 	            if (doAFullRedraw) {
+	                if (viz.hasOwnProperty("item")) {
+	                    for (i = 0; i < viz.item.length; i++) {
+	                        if (viz.item[i].hasOwnProperty("pulseInterval")) {
+	                            clearInterval(viz.item[i].pulseInterval);
+	                        }
+	                    }
+	                }
 	                viz.item = [];
 	            }
 
@@ -302,7 +309,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                min: "min",
 	                max: "max",
 	            };
-	            var item, i, j;
 
 	            // datamode = 1 is "|timechart" data. it doesnt allow for overrides
 	            if (datamode === 1) {
@@ -328,7 +334,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    for (i = 0; i < viz.data.rows.length; i++) {
 	                        item.overtimedata.push(viz.data.rows[i][j]);
 	                    }
-	                    item.value = item.overtimedata[item.overtimedata.length - 1]
+	                    item.value = item.overtimedata[item.overtimedata.length - 1];
 	                }
 	            } else {
 	                for (i = 0; i < viz.data.rows.length; i++) {
@@ -348,7 +354,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    currentRow = viz.data.rows[i];
 	                    if (datamode === 2) {
 	                        item.overtimedata = currentRow[0].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1]
+	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                        startCol = 2;
 	                    } else if (datamode === 3) {
 	                        item.overtimedata = currentRow[0].slice(1);
@@ -357,7 +363,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    } else if (datamode === 4) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1]
+	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                        startCol = 3;
 	                    } else if (datamode === 5) {
 	                        item.title = currentRow[0];
@@ -375,7 +381,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        startCol = 2;
 	                    } else if (datamode === 8) {
 	                        item.overtimedata = currentRow[0].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1]
+	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                        startCol = 2;
 	                    } else if (datamode === 9) {
 	                        item.value = currentRow[0];
@@ -383,9 +389,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    }
 	                    // overrides are columns in the data with specific names
 	                    if (startCol !== -1) {
-	                        for (var j = startCol; j < viz.data.fields.length; j++) {
-	                            if (allowedOverrides.hasOwnProperty(viz.data.fields[j].name)) {
-	                                item[allowedOverrides[viz.data.fields[j].name]] = currentRow[j];
+	                        for (var k = startCol; k < viz.data.fields.length; k++) {
+	                            if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
+	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
 	                            }
 	                        }
 	                    }
@@ -431,7 +437,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	        doDrawItem: function(item, doAFullRedraw){
 	            var viz = this;
-	            var i;
+	            var i, vbmultipler;
 	            if (! item.hasOwnProperty("min")) {
 	                item.min = viz.config.min;
 	            }
@@ -449,10 +455,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                item.$wrapc1 = $('<div class="number_display_viz-wrap_areachart"></div>').append(item.$canvas1);
 	                item.$wrapc2 = $('<div class="number_display_viz-wrap_main"></div>');
 	                item.$container = $('<div class="number_display_viz-wrap_item"></div>');
+	                item.$svg = $();
+	                item.$svgPulse = $();
 	                item.$container.append(item.$wrapc2, item.$wrapc1);
 	                viz.$container_wrap.append(item.$container);
-	                item.svgTextureId = "texture-" + viz.instance_id + "-" + item.id;
+	                item.svgTextureId = "texture_" + viz.instance_id + "_" + item.id;
 	                
+	                item.$container.on("click", function(browserEvent){
+	                    console.log("item clicked" );
+	                    viz.drilldown({
+	                        action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
+	                        data: {"sourcetype":"whatever"}
+	                    }, browserEvent);
+	                });
 	                if (viz.config.size > 0) {
 	                    var spacing = (viz.config.size * (viz.config.padding / 100)) / 2;
 	                    item.$container.css({"margin-left": spacing + "px", "margin-right": spacing + "px"});
@@ -468,27 +483,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                } else {
 	                    if (viz.config.style === "s0") {
-
-	                        // From https://loading.io/spinner/dash-ring/
+	                        // This is the splunk-esq one
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<circle cx="50" cy="50" r="47" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="226" stroke-linecap="round" stroke-width="1" transform="rotate(0 50 50)"><animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform></circle>'+
 	                        '<circle cx="50" cy="50" r="43" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="44" stroke-linecap="round" stroke-width="1" transform="rotate(90 50 50)"><animateTransform attributeName="transform" type="rotate" values="360 50 50;0 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform></circle>'+
 	                        '</svg>').appendTo(item.$wrapc2);
-	                    } else if (viz.config.style === "s1") {
 
+	                    } else if (viz.config.style === "s1") {
 	                        // From https://loading.io/spinner/dash-ring/
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<g transform="rotate(71.019 50 50)">'+
 	                        '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="31.41592653589793 251.32741228718345" stroke-linecap="round" stroke-width="7" transform="rotate(0 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="31.41592653589793 251.32741228718345" stroke-linecap="round" stroke-width="7" transform="rotate(90 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="31.41592653589793 251.32741228718345" stroke-linecap="round" stroke-width="7" transform="rotate(180 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="31.41592653589793 251.32741228718345" stroke-linecap="round" stroke-width="7" transform="rotate(270 50 50)"></circle>'+
+	                        '<circle cx="50" cy="50" r="45" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="31 251" stroke-linecap="square" stroke-width="7" transform="rotate(0 50 50)"></circle>'+
+	                        '<circle cx="50" cy="50" r="45" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="31 251" stroke-linecap="square" stroke-width="7" transform="rotate(90 50 50)"></circle>'+
+	                        '<circle cx="50" cy="50" r="45" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="31 251" stroke-linecap="square" stroke-width="7" transform="rotate(180 50 50)"></circle>'+
+	                        '<circle cx="50" cy="50" r="45" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="31 251" stroke-linecap="square" stroke-width="7" transform="rotate(270 50 50)"></circle>'+
 	                        '</g>'+
 	                        '</svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s2") {
-
 	                        // From https://loading.io/spinner/recycle/-recycle-spinner
 	                        item.$svg = $('<svg width="95%" height="95%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-6 0 106 100" preserveAspectRatio="xMidYMid">'+
 	                        '<g transform="translate(50,50)">'+
@@ -504,17 +517,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M44,87.1l4-8c-8.2-0.6-15.5-4.6-20.5-10.6l-9.3,0.6l-4.7,7.2C21.2,87,33.7,94.3,47.9,94.9L44,87.1z"></path>'+
 	                        '</g></g></g></g></svg>').appendTo(item.$wrapc2);
 
-	                    } else if (viz.config.style === "s3") {
-
-	                        // From https://loading.io/spinner/eclipse/-ring-loading-gif
-	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
-	                        '<path stroke="none" d="M10 50A40 40 0 0 0 90 50A40 42 0 0 1 10 50" class="number_display_viz-fill_primary" fill="#fc4309" transform="rotate(210.185 50 51)">'+
-	                        '<animateTransform attributeName="transform" type="rotate" calcMode="linear" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
-	                        '</path>'+
-	                        '</svg>').appendTo(item.$wrapc2);
-
 	                    } else if (viz.config.style === "s4") {
-
 	                        // From https://loading.io/spinner/camera/-camera-aperture-ajax-spinner
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<g transform="translate(50,50)">'+
@@ -533,7 +536,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</g></g></g></g></svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s5") {
-
 	                        // From https://loading.io/spinner/vortex/-vortex-spiral-spinner
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<g transform="translate(50,50)">'+
@@ -551,7 +553,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s6") {
-
 	                        // From https://loading.io/spinner/hud/-futuristic-game-interface-preloader
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="3 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<style type="text/css">.st2 { opacity: 0.3; }</style>'+
@@ -580,37 +581,17 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s7") {
-
 	                        // From https://loading.io/spinner/dash-ring/
 	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
 	                        '<g transform="rotate(8.69245 50 50)">'+
 	                        '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(0 50 50)"  ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(18 50 50)" ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(36 50 50)" ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(54 50 50)" ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(72 50 50)" ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(90 50 50)" ></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(108 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(126 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(144 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(162 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(180 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(198 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(216 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(234 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(252 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(270 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(288 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(306 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(324 50 50)"></circle>'+
-	                        '<circle cx="50" cy="50" r="40" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="6.283185307179586 251.32741228718345" stroke-linecap="round" stroke-width="1" transform="rotate(342 50 50)"></circle>'+
+	                        '<circle cx="50" cy="50" r="47" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="2 6" stroke-linecap="round" stroke-width="1" transform="rotate(0 50 50)"  ></circle>'+
+	                        '<circle cx="50" cy="50" r="47" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-dasharray="2 6" stroke-linecap="round" stroke-width="1" transform="rotate(3 50 50)" ></circle>'+
 	                        '</g>'+
 	                        '</svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s8") {
-
-	//<div>Icons made by <a href="https://www.flaticon.com/authors/mynamepong" title="mynamepong">mynamepong</a> from <a href="https://www.flaticon.com/" 			    title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" 			    title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
+	//<div>Icons made by <a href="https://www.flaticon.com/authors/mynamepong" title="mynamepong">mynamepong</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" 			    title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a></div>
 	                        item.$svg = $('<svg height="100%" width="100%" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">'+
 	                        '<path d="m440 0h-400c-22.082031.0273438-39.9726562 17.917969-40 40v400c.0273438 22.082031 17.917969 39.972656 40 40h400c22.082031-.027344 39.972656-17.917969 40-40v-400c-.027344-22.082031-17.917969-39.9726562-40-40zm-424 40c0-13.253906 10.746094-24 24-24h113.984375c-63.375 24.511719-113.472656 74.609375-137.984375 137.984375zm224-24c123.710938 0 224 100.289062 224 224s-100.289062 224-224 224-224-100.289062-224-224c.140625-123.652344 100.347656-223.859375 224-224zm-200 448c-13.253906 0-24-10.746094-24-24v-113.984375c24.511719 63.375 74.609375 113.472656 137.984375 137.984375zm424-24c0 13.253906-10.746094 24-24 24h-113.984375c63.375-24.511719 113.472656-74.609375 137.984375-137.984375zm-137.984375-424h113.984375c13.253906 0 24 10.746094 24 24v113.984375c-24.511719-63.375-74.609375-113.472656-137.984375-137.984375zm0 0" class="number_display_viz-fill_secondary" fill="#ffffff"/>'+
 	                        '<path d="m48 24c-13.253906 0-24 10.746094-24 24s10.746094 24 24 24 24-10.746094 24-24-10.746094-24-24-24zm0 32c-4.417969 0-8-3.582031-8-8s3.582031-8 8-8 8 3.582031 8 8-3.582031 8-8 8zm0 0" class="number_display_viz-fill_secondary" fill="#ffffff"/>'+
@@ -624,7 +605,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</svg>').appendTo(item.$wrapc2);
 
 	                    } else if (viz.config.style === "s9") {
-
 	                        item.$svg = $('<svg height="100%" width="100%" viewBox="0 0 464 464" xmlns="http://www.w3.org/2000/svg">'+
 	                        '<g class="number_display_viz-fill_primary" fill="#ffffff">'+
 	                        '<animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" values="0 232 232;360 232 232" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" keySplines="0.5 0.5 0.5 0.5" calcMode="spline"></animateTransform>'+
@@ -637,7 +617,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</g>'+
 	                        '<path d="m304 232c0 39.765625-32.234375 72-72 72s-72-32.234375-72-72 32.234375-72 72-72 72 32.234375 72 72zm0 0" fill="#bec3d1" class="number_display_viz-fill_primary" />'+
 	                        '</svg>').appendTo(item.$wrapc2);
-	 
+
+	                     } else if (viz.config.style === "s10") {
+	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
+	                        '<g transform="rotate(71.019 50 50)">'+
+	                        '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
+	                        '<circle cx="50" cy="50" r="46" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-linecap="butt" stroke-width="7"></circle>'+
+	                        '<circle cx="50" cy="50" r="46" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="12.1" stroke-linecap="butt" stroke-width="7" transform="rotate(0 50 50)"></circle>'+
+	                        '</g>'+
+	                        '</svg>').appendTo(item.$wrapc2);
+
+	                    } else if (viz.config.style === "s11") {
+	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
+	                        '<g transform="rotate(71.019 50 50)">'+
+	                        '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
+	                        '<circle cx="50" cy="50" r="46" class="number_display_viz-stroke_secondary" stroke="#ffffff" fill="none" stroke-linecap="butt" stroke-width="7"></circle>'+
+	                        '<circle cx="50" cy="50" r="46" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="12.1" stroke-linecap="butt" stroke-width="3" transform="rotate(0 50 50)"></circle>'+
+	                        '</g>'+
+	                        '</svg>').appendTo(item.$wrapc2);
+
 	                    } else if (viz.config.style === "a1") { // square
 	                        item.svgViewbox = "0 0 100 100";
 	                        item.svgString = '<rect x="5" y="5" width="90" height="90" class="number_display_viz-shape" />';
@@ -648,11 +646,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                    } else if (viz.config.style === "a3") { // rect 1
 	                        item.svgViewbox = "0 0 100 50";
-	                        item.svgString = '<rect x="2.5" y="2.5" width="90" height="45" class="number_display_viz-shape" />';
+	                        item.svgString = '<rect x="2.5" y="2.5" width="95" height="45" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a4") { // rect 2
 	                        item.svgViewbox = "0 0 100 50";
-	                        item.svgString = '<path d="M 5 2.5 h 80 a 2.5,2.5 0 0 1 2.5,2.5 v40 a2.5,2.5 0 0 1 -2.5,2.5 h-80 a2.5,2.5 0 0 1 -2.5,-2.5 v-40 a2.5,2.5 0 0 1 2.5,-2.5 z" class="number_display_viz-shape"></path>';
+	                        item.svgString = '<path d="M 5 2.5 h 90 a 2.5,2.5 0 0 1 2.5,2.5 v40 a2.5,2.5 0 0 1 -2.5,2.5 h-90 a2.5,2.5 0 0 1 -2.5,-2.5 v-40 a2.5,2.5 0 0 1 2.5,-2.5 z" class="number_display_viz-shape"></path>';
 
 	                    } else if (viz.config.style === "a5") { // circle
 	                        item.svgViewbox = "0 0 100 100";
@@ -685,19 +683,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                    } else if (viz.config.style === "a12") { // fill
 	                        // need to use a multipler to get the viewbox max size to be ~100 becuase otherwise the texture wont be consistant
-	                        var vbmultipler = 100 / Math.max(viz.size, (viz.size * viz.config.mainHeight));
+	                        vbmultipler = 100 / Math.max(viz.size, (viz.size * viz.config.mainHeight));
 	                        item.svgViewbox = "0 0 " + (viz.size * vbmultipler) + " " + (viz.size * viz.config.mainHeight * vbmultipler);
 	                        item.svgString = '<rect x="' + (5 * vbmultipler) + '" y="' + (5 * vbmultipler) + '" width="' + ((viz.size - 10) * vbmultipler) + '" height="' + ((viz.size * viz.config.mainHeight - 10) * vbmultipler) + '" class="number_display_viz-shape" />';
 
 	                    } else if (viz.config.style === "a13") { // fill
-	                        var vbmultipler = 100 / Math.max(viz.size, (viz.size * viz.config.mainHeight));
+	                        vbmultipler = 100 / Math.max(viz.size, (viz.size * viz.config.mainHeight));
 	                        var svgaradius = (viz.size * 0.025 * vbmultipler);
 	                        item.svgViewbox = "0 0 " + (viz.size * vbmultipler) + " " + (viz.size * viz.config.mainHeight * vbmultipler);
 	                        item.svgString = '<path d="M ' + (5 * vbmultipler + svgaradius) + ' ' + (5 * vbmultipler) + ' h ' + ((viz.size - 10) * vbmultipler - 2 * svgaradius) + ' a ' + svgaradius + ',' + svgaradius + ' 0 0 1 ' + svgaradius + ',' + svgaradius + ' v' + ((viz.size * viz.config.mainHeight - 10) * vbmultipler - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 -' + svgaradius + ',' + svgaradius + ' h-' + ((viz.size - 10) * vbmultipler - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 -' + svgaradius + ',-' + svgaradius + ' v-' + ((viz.size * viz.config.mainHeight - 10) * vbmultipler - 2 * svgaradius) + ' a' + svgaradius + ',' + svgaradius + ' 0 0 1 ' + svgaradius + ',-' + svgaradius + ' z" class="number_display_viz-shape"></path>';
 
 	                    }
 	                }
-
+	                // Shapes
 	                if (viz.config.style.substr(0,1) === "a") {
 	                    // Add the texture
 	                    if (viz.config.shapetexture === "solid") {
@@ -708,25 +706,25 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	                    } else if (viz.config.shapetexture === "triangles") { // https://www.svgbackgrounds.com/#subtle-prism
 	                        // FYI You cant insert defs after the svg has been created
-	                        item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='270' height='225' x='-10' y='-10'><svg xmlns='http://www.w3.org/2000/svg'  width='270' height='225' viewBox='0 0 1080 900'><defs><linearGradient id='a' gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='0' y2='50%' ><stop offset='0' stop-color='#0fd3ff' class='number_display_viz-stop_primary'/><stop offset='1' stop-color='#4FE' class='number_display_viz-stop_secondary'/></linearGradient><pattern patternUnits='userSpaceOnUse' id='b' width='300' height='250' x='0' y='0' viewBox='0 0 1080 900'><g fill-opacity='0.06'><polygon fill='#444' points='90 150 0 300 180 300'/><polygon points='90 150 180 0 0 0'/><polygon fill='#AAA' points='270 150 360 0 180 0'/><polygon fill='#DDD' points='450 150 360 300 540 300'/><polygon fill='#999' points='450 150 540 0 360 0'/><polygon points='630 150 540 300 720 300'/><polygon fill='#DDD' points='630 150 720 0 540 0'/><polygon fill='#444' points='810 150 720 300 900 300'/><polygon fill='#FFF' points='810 150 900 0 720 0'/><polygon fill='#DDD' points='990 150 900 300 1080 300'/><polygon fill='#444' points='990 150 1080 0 900 0'/><polygon fill='#DDD' points='90 450 0 600 180 600'/><polygon points='90 450 180 300 0 300'/><polygon fill='#666' points='270 450 180 600 360 600'/><polygon fill='#AAA' points='270 450 360 300 180 300'/><polygon fill='#DDD' points='450 450 360 600 540 600'/><polygon fill='#999' points='450 450 540 300 360 300'/><polygon fill='#999' points='630 450 540 600 720 600'/><polygon fill='#FFF' points='630 450 720 300 540 300'/><polygon points='810 450 720 600 900 600'/><polygon fill='#DDD' points='810 450 900 300 720 300'/><polygon fill='#AAA' points='990 450 900 600 1080 600'/><polygon fill='#444' points='990 450 1080 300 900 300'/><polygon fill='#222' points='90 750 0 900 180 900'/><polygon points='270 750 180 900 360 900'/><polygon fill='#DDD' points='270 750 360 600 180 600'/><polygon points='450 750 540 600 360 600'/><polygon points='630 750 540 900 720 900'/><polygon fill='#444' points='630 750 720 600 540 600'/><polygon fill='#AAA' points='810 750 720 900 900 900'/><polygon fill='#666' points='810 750 900 600 720 600'/><polygon fill='#999' points='990 750 900 900 1080 900'/><polygon fill='#999' points='180 0 90 150 270 150'/><polygon fill='#444' points='360 0 270 150 450 150'/><polygon fill='#FFF' points='540 0 450 150 630 150'/><polygon points='900 0 810 150 990 150'/><polygon fill='#222' points='0 300 -90 450 90 450'/><polygon fill='#FFF' points='0 300 90 150 -90 150'/><polygon fill='#FFF' points='180 300 90 450 270 450'/><polygon fill='#666' points='180 300 270 150 90 150'/><polygon fill='#222' points='360 300 270 450 450 450'/><polygon fill='#FFF' points='360 300 450 150 270 150'/><polygon fill='#444' points='540 300 450 450 630 450'/><polygon fill='#222' points='540 300 630 150 450 150'/><polygon fill='#AAA' points='720 300 630 450 810 450'/><polygon fill='#666' points='720 300 810 150 630 150'/><polygon fill='#FFF' points='900 300 810 450 990 450'/><polygon fill='#999' points='900 300 990 150 810 150'/><polygon points='0 600 -90 750 90 750'/><polygon fill='#666' points='0 600 90 450 -90 450'/><polygon fill='#AAA' points='180 600 90 750 270 750'/><polygon fill='#444' points='180 600 270 450 90 450'/><polygon fill='#444' points='360 600 270 750 450 750'/><polygon fill='#999' points='360 600 450 450 270 450'/><polygon fill='#666' points='540 600 630 450 450 450'/><polygon fill='#222' points='720 600 630 750 810 750'/><polygon fill='#FFF' points='900 600 810 750 990 750'/><polygon fill='#222' points='900 600 990 450 810 450'/><polygon fill='#DDD' points='0 900 90 750 -90 750'/><polygon fill='#444' points='180 900 270 750 90 750'/><polygon fill='#FFF' points='360 900 450 750 270 750'/><polygon fill='#AAA' points='540 900 630 750 450 750'/><polygon fill='#FFF' points='720 900 810 750 630 750'/><polygon fill='#222' points='900 900 990 750 810 750'/><polygon fill='#222' points='1080 300 990 450 1170 450'/><polygon fill='#FFF' points='1080 300 1170 150 990 150'/><polygon points='1080 600 990 750 1170 750'/><polygon fill='#666' points='1080 600 1170 450 990 450'/><polygon fill='#DDD' points='1080 900 1170 750 990 750'/></g></pattern></defs><rect x='0' y='0' fill='url(#a)' width='100%' height='100%'/><rect x='0' y='0' fill='url(#b)' width='100%' height='100%'/></svg></pattern></defs>";
+	                        item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='270' height='225' x='-10' y='-10'><svg xmlns='http://www.w3.org/2000/svg'  width='270' height='225' viewBox='0 0 1080 900'><defs><linearGradient id='" + item.svgTextureId + "a' gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='0' y2='50%' ><stop offset='0' stop-color='#0fd3ff' class='number_display_viz-stop_primary'/><stop offset='1' stop-color='#4FE' class='number_display_viz-stop_secondary'/></linearGradient><pattern patternUnits='userSpaceOnUse' id='b' width='300' height='250' x='0' y='0' viewBox='0 0 1080 900'><g fill-opacity='0.06'><polygon fill='#444' points='90 150 0 300 180 300'/><polygon points='90 150 180 0 0 0'/><polygon fill='#AAA' points='270 150 360 0 180 0'/><polygon fill='#DDD' points='450 150 360 300 540 300'/><polygon fill='#999' points='450 150 540 0 360 0'/><polygon points='630 150 540 300 720 300'/><polygon fill='#DDD' points='630 150 720 0 540 0'/><polygon fill='#444' points='810 150 720 300 900 300'/><polygon fill='#FFF' points='810 150 900 0 720 0'/><polygon fill='#DDD' points='990 150 900 300 1080 300'/><polygon fill='#444' points='990 150 1080 0 900 0'/><polygon fill='#DDD' points='90 450 0 600 180 600'/><polygon points='90 450 180 300 0 300'/><polygon fill='#666' points='270 450 180 600 360 600'/><polygon fill='#AAA' points='270 450 360 300 180 300'/><polygon fill='#DDD' points='450 450 360 600 540 600'/><polygon fill='#999' points='450 450 540 300 360 300'/><polygon fill='#999' points='630 450 540 600 720 600'/><polygon fill='#FFF' points='630 450 720 300 540 300'/><polygon points='810 450 720 600 900 600'/><polygon fill='#DDD' points='810 450 900 300 720 300'/><polygon fill='#AAA' points='990 450 900 600 1080 600'/><polygon fill='#444' points='990 450 1080 300 900 300'/><polygon fill='#222' points='90 750 0 900 180 900'/><polygon points='270 750 180 900 360 900'/><polygon fill='#DDD' points='270 750 360 600 180 600'/><polygon points='450 750 540 600 360 600'/><polygon points='630 750 540 900 720 900'/><polygon fill='#444' points='630 750 720 600 540 600'/><polygon fill='#AAA' points='810 750 720 900 900 900'/><polygon fill='#666' points='810 750 900 600 720 600'/><polygon fill='#999' points='990 750 900 900 1080 900'/><polygon fill='#999' points='180 0 90 150 270 150'/><polygon fill='#444' points='360 0 270 150 450 150'/><polygon fill='#FFF' points='540 0 450 150 630 150'/><polygon points='900 0 810 150 990 150'/><polygon fill='#222' points='0 300 -90 450 90 450'/><polygon fill='#FFF' points='0 300 90 150 -90 150'/><polygon fill='#FFF' points='180 300 90 450 270 450'/><polygon fill='#666' points='180 300 270 150 90 150'/><polygon fill='#222' points='360 300 270 450 450 450'/><polygon fill='#FFF' points='360 300 450 150 270 150'/><polygon fill='#444' points='540 300 450 450 630 450'/><polygon fill='#222' points='540 300 630 150 450 150'/><polygon fill='#AAA' points='720 300 630 450 810 450'/><polygon fill='#666' points='720 300 810 150 630 150'/><polygon fill='#FFF' points='900 300 810 450 990 450'/><polygon fill='#999' points='900 300 990 150 810 150'/><polygon points='0 600 -90 750 90 750'/><polygon fill='#666' points='0 600 90 450 -90 450'/><polygon fill='#AAA' points='180 600 90 750 270 750'/><polygon fill='#444' points='180 600 270 450 90 450'/><polygon fill='#444' points='360 600 270 750 450 750'/><polygon fill='#999' points='360 600 450 450 270 450'/><polygon fill='#666' points='540 600 630 450 450 450'/><polygon fill='#222' points='720 600 630 750 810 750'/><polygon fill='#FFF' points='900 600 810 750 990 750'/><polygon fill='#222' points='900 600 990 450 810 450'/><polygon fill='#DDD' points='0 900 90 750 -90 750'/><polygon fill='#444' points='180 900 270 750 90 750'/><polygon fill='#FFF' points='360 900 450 750 270 750'/><polygon fill='#AAA' points='540 900 630 750 450 750'/><polygon fill='#FFF' points='720 900 810 750 630 750'/><polygon fill='#222' points='900 900 990 750 810 750'/><polygon fill='#222' points='1080 300 990 450 1170 450'/><polygon fill='#FFF' points='1080 300 1170 150 990 150'/><polygon points='1080 600 990 750 1170 750'/><polygon fill='#666' points='1080 600 1170 450 990 450'/><polygon fill='#DDD' points='1080 900 1170 750 990 750'/></g></pattern></defs><rect x='0' y='0' fill='url(#" + item.svgTextureId + "a)' width='100%' height='100%'/><rect x='0' y='0' fill='url(#b)' width='100%' height='100%'/></svg></pattern></defs>";
 
 	                    } else if (viz.config.shapetexture === "Squares") { // https://www.svgbackgrounds.com/#randomized-pattern
 	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='120' height='120' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 1000 1000'>"+
-	"<defs><pattern id='a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='80' height='80' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#a)'/></svg></pattern></defs>";
+	"<defs><pattern id='" + item.svgTextureId + "a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='80' height='80' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#" + item.svgTextureId + "a)'/></svg></pattern></defs>";
 
 	                    } else if (viz.config.shapetexture === "texture3") { // https://www.svgbackgrounds.com/#wintery-sunburst centered
-	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='140' height='140' x='-20' y='-20'><svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
+	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='140' height='140' x='-20' y='-20'><svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='" + item.svgTextureId + "a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='" + item.svgTextureId + "b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#" + item.svgTextureId + "a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#" + item.svgTextureId + "b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
 
 	                    } else if (viz.config.shapetexture === "texture4") { // https://www.svgbackgrounds.com/#wintery-sunburst offset
-	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='200' height='200' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
+	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='200' height='200' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' x='0' y='0' viewBox='0 0 800 800'><defs><radialGradient id='" + item.svgTextureId + "a' cx='400' cy='400' r='50%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient><radialGradient id='" + item.svgTextureId + "b' cx='400' cy='400' r='70%' gradientUnits='userSpaceOnUse'><stop offset='0' stop-color='#ffffff' class='number_display_viz-stop_secondary'/><stop offset='1' stop-color='#ff0000' class='number_display_viz-stop_primary'/></radialGradient></defs><rect fill='url(#" + item.svgTextureId + "a)' width='800' height='800'/><g fill-opacity='.8'><path fill='url(#" + item.svgTextureId + "b)' d='M998.7 439.2c1.7-26.5 1.7-52.7 0.1-78.5L401 399.9c0 0 0-0.1 0-0.1l587.6-116.9c-5.1-25.9-11.9-51.2-20.3-75.8L400.9 399.7c0 0 0-0.1 0-0.1l537.3-265c-11.6-23.5-24.8-46.2-39.3-67.9L400.8 399.5c0 0 0-0.1-0.1-0.1l450.4-395c-17.3-19.7-35.8-38.2-55.5-55.5l-395 450.4c0 0-0.1 0-0.1-0.1L733.4-99c-21.7-14.5-44.4-27.6-68-39.3l-265 537.4c0 0-0.1 0-0.1 0l192.6-567.4c-24.6-8.3-49.9-15.1-75.8-20.2L400.2 399c0 0-0.1 0-0.1 0l39.2-597.7c-26.5-1.7-52.7-1.7-78.5-0.1L399.9 399c0 0-0.1 0-0.1 0L282.9-188.6c-25.9 5.1-51.2 11.9-75.8 20.3l192.6 567.4c0 0-0.1 0-0.1 0l-265-537.3c-23.5 11.6-46.2 24.8-67.9 39.3l332.8 498.1c0 0-0.1 0-0.1 0.1L4.4-51.1C-15.3-33.9-33.8-15.3-51.1 4.4l450.4 395c0 0 0 0.1-0.1 0.1L-99 66.6c-14.5 21.7-27.6 44.4-39.3 68l537.4 265c0 0 0 0.1 0 0.1l-567.4-192.6c-8.3 24.6-15.1 49.9-20.2 75.8L399 399.8c0 0 0 0.1 0 0.1l-597.7-39.2c-1.7 26.5-1.7 52.7-0.1 78.5L399 400.1c0 0 0 0.1 0 0.1l-587.6 116.9c5.1 25.9 11.9 51.2 20.3 75.8l567.4-192.6c0 0 0 0.1 0 0.1l-537.3 265c11.6 23.5 24.8 46.2 39.3 67.9l498.1-332.8c0 0 0 0.1 0.1 0.1l-450.4 395c17.3 19.7 35.8 38.2 55.5 55.5l395-450.4c0 0 0.1 0 0.1 0.1L66.6 899c21.7 14.5 44.4 27.6 68 39.3l265-537.4c0 0 0.1 0 0.1 0L207.1 968.3c24.6 8.3 49.9 15.1 75.8 20.2L399.8 401c0 0 0.1 0 0.1 0l-39.2 597.7c26.5 1.7 52.7 1.7 78.5 0.1L400.1 401c0 0 0.1 0 0.1 0l116.9 587.6c25.9-5.1 51.2-11.9 75.8-20.3L400.3 400.9c0 0 0.1 0 0.1 0l265 537.3c23.5-11.6 46.2-24.8 67.9-39.3L400.5 400.8c0 0 0.1 0 0.1-0.1l395 450.4c19.7-17.3 38.2-35.8 55.5-55.5l-450.4-395c0 0 0-0.1 0.1-0.1L899 733.4c14.5-21.7 27.6-44.4 39.3-68l-537.4-265c0 0 0-0.1 0-0.1l567.4 192.6c8.3-24.6 15.1-49.9 20.2-75.8L401 400.2c0 0 0-0.1 0-0.1L998.7 439.2z'/></g></svg></pattern></defs>";
 
 	                    } else if (viz.config.shapetexture === "texture5") { // https://www.svgbackgrounds.com/#randomized-pattern
 	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='120' height='120' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 1000 1000'>"+
-	"<defs><pattern id='a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='50' height='100' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#a)'/></svg></pattern></defs>";
+	"<defs><pattern id='" + item.svgTextureId + "a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='50' height='100' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#" + item.svgTextureId + "a)'/></svg></pattern></defs>";
 
 	                    } else if (viz.config.shapetexture === "texture6") { // https://www.svgbackgrounds.com/#randomized-pattern
 	item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='userSpaceOnUse' width='120' height='120' x='0' y='0'><svg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 1000 1000'>"+
-	"<defs><pattern id='a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='100' height='50' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#a)'/></svg></pattern></defs>";
+	"<defs><pattern id='" + item.svgTextureId + "a' patternUnits='userSpaceOnUse' width='100' height='100'><rect x='0' y='0' width='100' height='100' fill='#F29E03'  class='number_display_viz-fill_primary'/><rect x='0' y='0' width='100' height='50' fill-opacity='0.2' fill='#ffa61d'  class='number_display_viz-fill_secondary'/></pattern></defs><rect x='0' y='0' width='1000' height='1000' fill='url(#" + item.svgTextureId + "a)'/></svg></pattern></defs>";
 
 	                    }
 
@@ -735,28 +733,27 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    item.$svgShape.attr("fill", "url(#" + item.svgTextureId + ")");
 	                    item.$svg.appendTo(item.$wrapc2);
 
-	                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">'+ item.svgGradient + item.svgString + '</svg>');
+	                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">' + item.svgString + '</svg>'); // + item.svgGradient
 	                    item.$svgPulseShape = item.$svgPulse.find(".number_display_viz-shape");
 	                    item.$svgPulseShape.attr("fill", "url(#" + item.svgTextureId + ")");
 	                    item.$svgPulse.prependTo(item.$wrapc2);
-
-	                    item.$svgFillPrimary = item.$svg.find(".number_display_viz-fill_primary").add(item.$svgPulse.find(".number_display_viz-fill_primary"));
-	                    item.$svgFillSecondary = item.$svg.find(".number_display_viz-fill_secondary").add(item.$svgPulse.find(".number_display_viz-fill_secondary"));
-	                    item.$svgStrokePrimary = item.$svg.find(".number_display_viz-stroke_primary").add(item.$svgPulse.find(".number_display_viz-stroke_primary"));
-	                    item.$svgStrokeSecondary = item.$svg.find(".number_display_viz-stroke_secondary").add(item.$svgPulse.find(".number_display_viz-stroke_secondary"));
-	                    item.$svgStopPrimary = item.$svg.find(".number_display_viz-stop_primary").add(item.$svgPulse.find(".number_display_viz-stop_primary"));
-	                    item.$svgStopSecondary = item.$svg.find(".number_display_viz-stop_secondary").add(item.$svgPulse.find(".number_display_viz-stop_secondary"));
-
-	                    item.$svgSpeed1 = item.$svg.find(".number_display_viz-speed_1x");
-	                    item.$svgSpeed05 = item.$svg.find(".number_display_viz-speed_05x");
-	                    item.$svgSpeed15 = item.$svg.find(".number_display_viz-speed_15x");
 	                    
 	                    // Add the drop shadow to shapes
 	                    if (viz.config.shapeshadow === "yes") { 
 	                        item.$svg.css("filter", "drop-shadow(" + tinycolor(viz.config.shapedropcolor).setAlpha(0.5).toRgbString() + " 0px 0px " + Math.min(10, (viz.size * viz.config.mainHeight * 0.03)) + "px)");
 	                    }
 	                }
-	                
+	                item.$svgFillPrimary = item.$svg.find(".number_display_viz-fill_primary").add(item.$svgPulse.find(".number_display_viz-fill_primary"));
+	                item.$svgFillSecondary = item.$svg.find(".number_display_viz-fill_secondary").add(item.$svgPulse.find(".number_display_viz-fill_secondary"));
+	                item.$svgStrokePrimary = item.$svg.find(".number_display_viz-stroke_primary").add(item.$svgPulse.find(".number_display_viz-stroke_primary"));
+	                item.$svgStrokeSecondary = item.$svg.find(".number_display_viz-stroke_secondary").add(item.$svgPulse.find(".number_display_viz-stroke_secondary"));
+	                item.$svgStopPrimary = item.$svg.find(".number_display_viz-stop_primary").add(item.$svgPulse.find(".number_display_viz-stop_primary"));
+	                item.$svgStopSecondary = item.$svg.find(".number_display_viz-stop_secondary").add(item.$svgPulse.find(".number_display_viz-stop_secondary"));
+
+	                item.$svgSpeed1 = item.$svg.find(".number_display_viz-speed_1x");
+	                item.$svgSpeed05 = item.$svg.find(".number_display_viz-speed_05x");
+	                item.$svgSpeed15 = item.$svg.find(".number_display_viz-speed_15x");
+	            
 	                if (viz.config.sparkorder === "fg") {
 	                    item.$wrapc1.css("z-index", 2);
 	                } else if (viz.config.sparkorder === "bg") {
@@ -817,7 +814,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    "margin-left": (item.width / 2 * -1) + "px", 
 	                    "left": "50%",
 	                    "text-align": viz.config.titlealign,
-	                }).addClass(viz.config.titlefont).html(viz.config.titletext); // allow injection
+	                }).addClass(viz.config.titlefont);
 
 	                if (viz.config.titlealign === "left") {
 	                    item.$overlayTitle.css({"padding-left": item.width * 0.1 + "px"});
@@ -827,7 +824,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                if (viz.config.titledrop === "yes") {
 	                    item.$overlayTitle.css({"text-shadow": "1px 1px 1px " + viz.config.titledropcolor});
 	                }
-
 	                if (viz.config.titlecolormode === "static") {
 	                    item.$overlayTitle.css({"color": viz.config.titlecolor});
 	                }
@@ -982,11 +978,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            if (viz.config.titletext === "" && item.title) {
 	                item.$overlayTitle.html(item.title);
+	            } else {
+	                item.$overlayTitle.html(viz.config.titletext); // allow injection
 	            }
 
 	            var value = item.value;
 	            var value_display = value;
-	            var value_color = viz.config.nodatacolor;0
+	            var value_color = viz.config.nodatacolor;
 	            var value_lowerseg = item.min;
 	            var value_upperseg;
 	            var value_nodata = false;
@@ -1019,15 +1017,15 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Add the border to shapes
 	            if (viz.config.style.substr(0,1) === "a" && viz.config.shapebordersize > 0) {
 	                item.$svgShape.attr("stroke-width", viz.config.shapebordersize + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color));
-	                item.$svgPulseShape.attr("stroke-width", viz.config.shapebordersize + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color));
+	                if (item.hasOwnProperty("$svgPulseShape")) {
+	                    item.$svgPulseShape.attr("stroke-width", viz.config.shapebordersize + "%").attr("stroke", viz.getColorFromMode(viz.config.shapebordercolormode, viz.config.shapebordercolor, value_color));
+	                }
 	            }
 
 	            // Add the pulse animation
-	            // TODO rate not correct
-	            if (viz.config.style.substr(0,1) === "a" && viz.config.pulserate > 0) {
-	                
+	            if (viz.config.style.substr(0,1) === "a" && viz.config.pulserate > 0 && doAFullRedraw) {
 	                // get the height so it forces a draw
-	                setInterval(function(){ 
+	                item.pulseInterval = setInterval(function(){
 	                    item.$svgPulse.one('transitionend webkitTransitionEnd oTransitionEnd', function () {
 	                        item.$svgPulse.css({"transition": "none"});
 	                        // Read the height to force flush
@@ -1035,8 +1033,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        item.$svgPulse.css({"transition": "transform,opacity 2s,2s","opacity":"0.25","transform":"scale(1)"});
 	                    });
 	                    item.$svgPulse.css({"opacity":"0","transform":"scale(1.2)"}); 
-	                }, 2500);
-
+	                }, Math.max(2500, (60000 / viz.config.pulserate)));
 	            }
 	            
 	            var value_color_primary = viz.getColorFromMode(viz.config.colorprimarymode, viz.config.colorprimary, value_color);
@@ -1081,14 +1078,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    speed = (value_as_percentage * (viz.config.spinnerspeedmax - viz.config.spinnerspeedmin)) + viz.config.spinnerspeedmin;
 	                    speed = (speed === 0) ? 9999999 : 60 / speed;
 	                }
-
 	                item.$svgFillPrimary.attr("fill", value_color_primary);
 	                item.$svgFillSecondary.attr("fill", value_color_secondary);
 	                item.$svgStrokePrimary.attr("stroke", value_color_primary);
 	                item.$svgStrokeSecondary.attr("stroke", value_color_secondary);
 	                item.$svgStopPrimary.attr("stop-color", value_color_primary);
 	                item.$svgStopSecondary.attr("stop-color", value_color_secondary);
-
+	            
 	                item.$svgSpeed1.attr("dur", speed + "s");
 	                item.$svgSpeed05.attr("dur", (speed * 0.5) + "s");
 	                item.$svgSpeed15.attr("dur", (speed * 1.5) + "s");
@@ -1214,8 +1210,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    } else {
 	                        number = Math.round(number * Math.pow(10, Math.max(decPlaces - 1, 0))) / Math.pow(10, Math.max(decPlaces - 1, 0));
 	                    }
-	                    number += units[i]
-	                    break
+	                    number += units[i];
+	                    break;
 	                }
 	            }
 	            return isNegative ? '-' + number : number;
