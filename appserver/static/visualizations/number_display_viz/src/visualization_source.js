@@ -20,8 +20,6 @@ function(
             if (typeof vizUtils.getCurrentTheme === "function") {
                 theme = vizUtils.getCurrentTheme();
             }
-            if (theme === 'dark') {
-            }
             viz.colors = ["#006d9c", "#4fa484", "#ec9960", "#af575a", "#b6c75a", "#62b3b2"];
             if (typeof vizUtils.getColorPalette === "function") {
                 viz.colors = vizUtils.getColorPalette("splunkCategorical", theme);
@@ -37,26 +35,46 @@ function(
         updateView: function(data, config) {
             var viz = this;
             viz.config = {
+                style: "g1", 
+                padding: "10",
+                size: "",
                 min: "0",
                 max: "100",
-                style: "g1", 
-                thresholdsize: 20,
-                thresholdcol1: "#ffffff",
-                thresholdcol2: "#ffffff",
-                thresholdcol3: "#ffffff",
+                nodatacolor: "#0178c7",
+                thresholdcol1: "#1a9035",
+                thresholdcol2: "#d16f18",
+                thresholdcol3: "#b22b32",
                 thresholdcol4: "#ffffff",
                 thresholdcol5: "#ffffff",
                 thresholdcol6: "#ffffff",
-                thresholdval1: "",
-                thresholdval2: "",
-                thresholdval3: "",
+                thresholdval2: "70",
+                thresholdval3: "90",
                 thresholdval4: "",
                 thresholdval5: "",
                 thresholdval6: "",
-                shadowcolor: "",
-                nodatacolor: "#5C6773",
-                bordercolor: "#ffffff",
-                bordersize: "2",
+                colorprimarymode: "auto",
+                colorprimary: "#000000",
+                colorsecondarymode: "darker1",
+                colorsecondary: "#000000",
+
+                sparkorder: "bg",
+                sparkstyle: "area",
+                sparkcolormodeline: "auto",
+                sparkcolorline: "#0178c7",
+                sparkcolormodefill: "auto",
+                sparkcolorfill: "#009DD9",
+                sparkmin: "0",
+                sparkmax: "",
+                sparkalign: "5",
+                sparkalignv: "70",
+                sparkHeight: "30",
+                sparkWidth: "90",
+
+                textshow: "yes",
+                textmode: "static",
+                textcolor: "#000000",
+                textalign: "center",
+                textalignv: "50",
                 textsize: "100",
                 textduration: "300",
                 textprecision: "1",
@@ -65,61 +83,58 @@ function(
                 textunitsize: "50",
                 textunitposition: "after",
                 textfont: "",
-                textcolor: "#000000",
-                textmode: "static",
-                textshow: "yes",
                 textdrop: "yes",
-                textalign: "center",
                 textdropcolor: "#ffffff",
+
                 titletext: "",
                 titlealign: "center",
+                titlealignv: "30",
+                titlesize: "45",
                 titlecolormode: "static",
                 titlecolor: "#5C6773",
-                titlesize: "100",
                 titlefont: "",
                 titledrop: "yes",
                 titledropcolor: "#ffffff",
-                animations: "on",
-                sparkmin: "0",
-                sparkmax: "",
-                sparkcolormodeline: "auto",
-                sparkcolorline: "#5C6773",
-                sparkcolormodefill: "auto",
-                sparkcolorfill: "#5C6773",
-                sparkstyle: "area",
-                sparkorder: "bg",
+
+                subtitletext: "",
+                subtitlealign: "center",
+                subtitlealignv: "70",
+                subtitlesize: "40",
+                subtitlecolormode: "static",
+                subtitlecolor: "#5C6773",
+                subtitlefont: "",
+                subtitledrop: "yes",
+                subtitledropcolor: "#ffffff",
+
+                shadowcolor: "#F2F4F5",
+                bordercolor: "#ffffff",
+                bordersize: "2",
+                thickness: "50",
+                thresholdsize: "20",
+
                 spinnerspeedmin: "15",
                 spinnerspeedmax: "1",
+
                 shapetexture: "solid",
                 shapeshadow: "yes",
                 shapedropcolor: "#ffffff",
-                colorprimarymode: "auto",
-                colorprimary: "#000000",
-                colorsecondarymode: "darker1",
-                colorsecondary: "#000000",
                 shapebordercolormode: "static",
                 shapebordercolor: "#FFFFFF",
                 shapebordersize: "1",
-                padding: "10",
-                pulserate: 4,
+                pulserate: "4",
 
                 circumference: Math.PI + 0.6,
                 rotation: -Math.PI - 0.3,
-                thickness: 50,
-                textalignv: 50,
-                titlealignv: 20,
-                titleBaseSize: 0.4,
                 mainHeight:  0.95,
                 mainWidth: 0.95,
-                sparkalign: 5,
-                sparkalignv: 70,
-                sparkHeight: 30,
-                sparkWidth: 100,
             };
 
             var style_overrides = {
-                g1: {},
+                g1: {
+                    mainHeight:  0.7
+                },
                 g2: {
+                    mainHeight:  0.6,
                     circumference: Math.PI,
                     rotation: -Math.PI,
                 },
@@ -170,7 +185,8 @@ function(
                 return;
             }
 
-            // If the gague type is still the same
+            // Keep track of the container size the config used so we know if we need to redraw teh whole page
+            viz.config.containerSize = viz.$container_wrap.height();
             var serialised = JSON.stringify(viz.config);
             var doAFullRedraw = false;
             if (viz.alreadyDrawn !== serialised) {
@@ -247,6 +263,7 @@ function(
 
             if (doAFullRedraw) {
                 if (viz.hasOwnProperty("item")) {
+                    // Clear any running timers
                     for (i = 0; i < viz.item.length; i++) {
                         if (viz.item[i].hasOwnProperty("pulseInterval")) {
                             clearInterval(viz.item[i].pulseInterval);
@@ -261,6 +278,7 @@ function(
                 primarycolor: "primarycolor",
                 secondarycolor: "secondarycolor",
                 text: "text",
+                subtitle: "subtitle",
                 min: "min",
                 max: "max",
             };
@@ -407,20 +425,23 @@ function(
                 item.$canvas2 = $('<canvas class="number_display_viz-canvas_main"></canvas>');
                 item.$overlayText = $('<div class="number_display_viz-overlay_text"></div>');
                 item.$overlayTitle = $('<div class="number_display_viz-overlay_title"></div>');
+                item.$overlaySubTitle = $('<div class="number_display_viz-overlay_subtitle"></div>');
                 item.$wrapc1 = $('<div class="number_display_viz-wrap_areachart"></div>').append(item.$canvas1);
                 item.$wrapc2 = $('<div class="number_display_viz-wrap_main"></div>');
                 item.$container = $('<div class="number_display_viz-wrap_item"></div>');
                 item.$svg = $();
                 item.$svgPulse = $();
-                item.$container.append(item.$wrapc2, item.$wrapc1);
+                item.$container.append(item.$wrapc2, item.$wrapc1, item.$overlayTitle, item.$overlaySubTitle);
                 viz.$container_wrap.append(item.$container);
                 item.svgTextureId = "texture_" + viz.instance_id + "_" + item.id;
                 
                 if (viz.hasOwnProperty("drilldown_field")) {
                     item.$container.css("cursor","pointer").on("click", function(browserEvent){
+                        var data = {};
+                        data[viz.drilldown_field] = item.title;
                         viz.drilldown({
                             action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-                            data: { viz.drilldown_field : item.title}
+                            data: data
                         }, browserEvent);
                     });
                 }
@@ -432,7 +453,6 @@ function(
                 if (viz.config.textshow === "yes") {
                     item.$container.append(item.$overlayText);
                 }
-                item.$container.append(item.$overlayTitle);
 
                 if (viz.config.style.substr(0,1) === "g") {
                         item.$canvas2.appendTo(item.$wrapc2);
@@ -446,7 +466,6 @@ function(
                         '</svg>').appendTo(item.$wrapc2);
 
                     } else if (viz.config.style === "s1") {
-                        // From https://loading.io/spinner/dash-ring/
                         item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
                         '<g transform="rotate(71.019 50 50)">'+
                         '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
@@ -473,12 +492,18 @@ function(
                         '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M44,87.1l4-8c-8.2-0.6-15.5-4.6-20.5-10.6l-9.3,0.6l-4.7,7.2C21.2,87,33.7,94.3,47.9,94.9L44,87.1z"></path>'+
                         '</g></g></g></g></svg>').appendTo(item.$wrapc2);
 
+                    } else if (viz.config.style === "s3") {
+                        // This is the splunk-esq one
+                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
+                        '<circle cx="50" cy="50" r="47" class="number_display_viz-stroke_primary" stroke="#ffffff" fill="none" stroke-dasharray="6.18" stroke-linecap="butt" stroke-width="1">'+
+                        '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
+                        '</circle>'+
+                        '<circle cx="50" cy="50" r="45" class="number_display_viz-fill_secondary" fill="#ffffff"></circle>'+
+                        '</svg>').appendTo(item.$wrapc2);
+
                     } else if (viz.config.style === "s4") {
                         // From https://loading.io/spinner/camera/-camera-aperture-ajax-spinner
                         item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
-                        '<g transform="translate(50,50)">'+
-                        '<g transform="scale(0.8)">'+
-                        '<g transform="translate(-50,-50)">'+
                         '<g transform="rotate(356.226 50.0002 50.0002)">'+
                         '<animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" values="360 50 50;0 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" keySplines="0.5 0.5 0.5 0.5" calcMode="spline"></animateTransform>'+
                         '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M54.3,28.1h34.2c-4.5-9.3-12.4-16.7-21.9-20.8L45.7,28.1L54.3,28.1L54.3,28.1z"></path>'+
@@ -489,14 +514,11 @@ function(
                         '<path class="number_display_viz-fill_secondary" fill="#ffffff" d="M62.4,68.5L38.3,92.6c0,0,0,0,0,0c9.8,3.4,20.6,3.1,30.2-0.8V62.4L62.4,68.5z"></path>'+
                         '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M71.9,45.7v8.6v34.2c0,0,0,0,0,0c9.3-4.5,16.7-12.4,20.8-21.9L71.9,45.7z"></path>'+
                         '<path class="number_display_viz-fill_secondary" fill="#ffffff" d="M91.9,31.5C91.9,31.5,91.9,31.5,91.9,31.5l-29.5,0l0,0l6.1,6.1l24.1,24.1c0,0,0,0,0,0 C96,51.9,95.8,41.1,91.9,31.5z"></path>'+
-                        '</g></g></g></g></svg>').appendTo(item.$wrapc2);
+                        '</g></svg>').appendTo(item.$wrapc2);
 
                     } else if (viz.config.style === "s5") {
                         // From https://loading.io/spinner/vortex/-vortex-spiral-spinner
                         item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
-                        '<g transform="translate(50,50)">'+
-                        '<g transform="scale(0.8)">'+
-                        '<g transform="translate(-50,-50)">'+
                         '<g transform="rotate(325.216 50 50)">'+
                         '<animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" values="360 50 50;0 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" keySplines="0.5 0.5 0.5 0.5" calcMode="spline"></animateTransform>'+
                         '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M30.4,9.7c-7.4,10.9-11.8,23.8-12.3,37.9c0.2,1,0.5,1.9,0.7,2.8c1.4-5.2,3.4-10.3,6.2-15.1 c2.6-4.4,5.6-8.4,9-12c0.7-0.7,1.4-1.4,2.1-2.1c7.4-7,16.4-12,26-14.6C51.5,3.6,40.2,4.9,30.4,9.7z"></path>'+
@@ -505,13 +527,14 @@ function(
                         '<path class="number_display_viz-fill_secondary" fill="#ffffff" d="M81.1,49.6c-1.4,5.2-3.4,10.3-6.2,15.1c-2.6,4.4-5.6,8.4-9,12c-0.7,0.7-1.4,1.4-2.1,2.1 c-7.4,7-16.4,12-26,14.6c10.7,3,22.1,1.7,31.8-3.1c7.4-10.9,11.8-23.8,12.3-37.9C81.6,51.5,81.4,50.6,81.1,49.6z"></path>'+
                         '<path class="number_display_viz-fill_secondary " fill="#ffffff" d="M75.2,12.9c-13.1-0.9-26.6,1.7-38.9,8.3c-0.7,0.7-1.4,1.4-2.1,2.1c5.2-1.4,10.6-2.2,16.2-2.2 c5.1,0,10.1,0.6,14.9,1.8c1,0.2,1.9,0.5,2.8,0.8c9.8,2.9,18.5,8.2,25.6,15.2C90.9,28.1,84.2,18.9,75.2,12.9z"></path>'+
                         '<path class="number_display_viz-fill_primary" fill="#ffffff" d="M94.7,53.2C89,41.4,80,31.1,68.1,23.7c-0.9-0.3-1.9-0.5-2.8-0.8c3.8,3.8,7.2,8.1,10,13 c2.6,4.4,4.5,9.1,5.9,13.8c0.3,0.9,0.5,1.9,0.7,2.8c2.4,9.9,2.2,20.2-0.4,29.8C89.4,74.5,94,64,94.7,53.2z"></path>'+
-                        '</g></g></g></g>'+
+                        '</g>'+
                         '</svg>').appendTo(item.$wrapc2);
 
                     } else if (viz.config.style === "s6") {
                         // From https://loading.io/spinner/hud/-futuristic-game-interface-preloader
                         item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="3 0 100 100" preserveAspectRatio="xMidYMid">'+
                         '<style type="text/css">.st2 { opacity: 0.3; }</style>'+
+                        '<g transform="scale(1.2) "><g transform="translate(-9,-11)">'+
                         '<g class="st2" transform="rotate(0.0144043 53.064 52)">'+
                         '<path d="M36,61.9c-1.7-3-2.7-6.4-2.7-9.9c0-10.9,8.8-19.7,19.7-19.7v1c-10.3,0-18.8,8.4-18.8,18.8 c0,3.3,0.9,6.5,2.5,9.4L36,61.9z" class="number_display_viz-fill_secondary" fill="#ffffff"></path>'+
                         '<animateTransform attributeName="transform" type="rotate" calcMode="linear" values="360 53.064 52;0 53.064 52" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s"  repeatCount="indefinite"></animateTransform>'+
@@ -534,10 +557,10 @@ function(
                         '<path d="M28.6,60.6l-1.1,0.4C31.3,71.8,41.6,79,53.1,79v-1.2C42.1,77.9,32.3,70.9,28.6,60.6z" class="number_display_viz-fill_secondary" fill="#ffffff"></path>'+
                         '<animateTransform attributeName="transform" type="rotate" calcMode="linear" values="360 53.064 52;0 53.064 52" keyTimes="0;1" class="number_display_viz-speed_15x" dur="15s" repeatCount="indefinite"></animateTransform>'+
                         '</g>'+
+                        '</g></g>'+
                         '</svg>').appendTo(item.$wrapc2);
 
                     } else if (viz.config.style === "s7") {
-                        // From https://loading.io/spinner/dash-ring/
                         item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">'+
                         '<g transform="rotate(8.69245 50 50)">'+
                         '<animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" keyTimes="0;1" class="number_display_viz-speed_1x" dur="10s" repeatCount="indefinite"></animateTransform>'+
@@ -689,7 +712,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     item.$svgShape.attr("fill", "url(#" + item.svgTextureId + ")");
                     item.$svg.appendTo(item.$wrapc2);
 
-                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">' + item.svgString + '</svg>'); // + item.svgGradient
+                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">' + item.svgGradient +  + item.svgString + '</svg>');
                     item.$svgPulseShape = item.$svgPulse.find(".number_display_viz-shape");
                     item.$svgPulseShape.attr("fill", "url(#" + item.svgTextureId + ")");
                     item.$svgPulse.prependTo(item.$wrapc2);
@@ -719,6 +742,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.height = (viz.size * viz.config.mainHeight);
                 item.width = (viz.size * viz.config.mainWidth);
                 item.$container.css({
+                    "margin-top" :  (-1 * item.height / 2) + "px",
                     "height": item.height + "px", 
                     "width": item.width + "px"
                 });
@@ -762,7 +786,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     item.$overlayText.css({"color": viz.config.textcolor});
                 }
                 // Title overlay
-                var titlefontsize = (item.height * 0.2 * (Number(viz.config.titlesize) / 100) * viz.config.titleBaseSize);
+                var titlefontsize = (item.height * 0.2 * (Number(viz.config.titlesize) / 100));
                 item.$overlayTitle.css({
                     "font-size": titlefontsize + "px", 
                     "margin-top": (item.height * (viz.config.titlealignv / 100) - (titlefontsize * 0.5)) + "px", 
@@ -783,6 +807,29 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 if (viz.config.titlecolormode === "static") {
                     item.$overlayTitle.css({"color": viz.config.titlecolor});
                 }
+
+                // SubTitle overlay
+                var subtitlefontsize = (item.height * 0.2 * (Number(viz.config.subtitlesize) / 100));
+                item.$overlaySubTitle.css({
+                    "font-size": subtitlefontsize + "px", 
+                    "margin-top": (item.height * (viz.config.subtitlealignv / 100) - (subtitlefontsize * 0.5)) + "px", 
+                    "width": item.width + "px",
+                    "margin-left": (item.width / 2 * -1) + "px", 
+                    "left": "50%",
+                    "text-align": viz.config.subtitlealign,
+                }).addClass(viz.config.subtitlefont);
+
+                if (viz.config.subtitlealign === "left") {
+                    item.$overlaySubTitle.css({"padding-left": item.width * 0.1 + "px"});
+                } else if (viz.config.subtitlealign === "right") {
+                    item.$overlaySubTitle.css({"padding-right": item.width * 0.1 + "px"});
+                }
+                if (viz.config.subtitledrop === "yes") {
+                    item.$overlaySubTitle.css({"text-shadow": "1px 1px 1px " + viz.config.subtitledropcolor});
+                }
+                if (viz.config.subtitlecolormode === "static") {
+                    item.$overlaySubTitle.css({"color": viz.config.subtitlecolor});
+                }                
 
                 if (viz.config.style.substr(0,1) === "g") {
                     item.$canvas2[0].height = viz.size * viz.config.mainHeight;
@@ -820,18 +867,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                             },
                             tooltips: {
                                 enabled: false,
-                            },
-                            // TODO add onclick
-                            // onClick: function(browserEvent, elements){
-                            //     var data = {};
-                            //     if (elements.length > 0) {
-                            //         data[instance.datas.fields[0].name] = viz.data.labels[elements[0]._index];
-                            //         instance.drilldown({
-                            //             action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
-                            //             data: data
-                            //         }, browserEvent);
-                            //     }
-                            // }
+                            }
                         }
                     };
                     item.myDoughnut = new Chart(item.ctx2, item.donutCfg);
@@ -936,6 +972,12 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.$overlayTitle.html(item.title);
             } else {
                 item.$overlayTitle.html(viz.config.titletext); // allow injection
+            }
+
+            if (viz.config.subtitletext === "" && item.subtitle) {
+                item.$overlaySubTitle.html(item.subtitle);
+            } else {
+                item.$overlaySubTitle.html(viz.config.subtitletext); // allow injection
             }
 
             var value = item.value;
@@ -1074,8 +1116,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 // Need to have a previous value and both old and new need to be numbers for animation to work
                 } else if (! isNaN(overlay_prev) && ! isNaN(overlay_now) && overlay_prev !== overlay_now && viz.config.textprecision !== "nolimit") {
                     $({value: overlay_prev, target: item.$overlayText}).animate({value: overlay_now}, {
-                        duration: viz.config.textduration,
-                        easing: "linear",
+                        duration: Number(viz.config.textduration),
+                        easing: "swing",
                         step: function(val, fx) {
                             this.target.html(viz.buildOverlay(val));
                         }
@@ -1092,6 +1134,9 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
             }
             if (viz.config.titlecolormode !== "static") {
                 item.$overlayTitle.css({"color": viz.getColorFromMode(viz.config.titlecolormode, viz.config.titlecolor, value_color)});
+            }
+            if (viz.config.subtitlecolormode !== "static") {
+                item.$overlaySubTitle.css({"color": viz.getColorFromMode(viz.config.subtitlecolormode, viz.config.subtitlecolor, value_color)});
             }
 
             if (viz.config.sparkorder !== "no") {
