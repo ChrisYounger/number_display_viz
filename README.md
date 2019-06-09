@@ -68,7 +68,7 @@ Any icon from the FontAwesome v5 Free icon sets can be used, the complete list i
 There are also some Splunk built-in icons that can be used. See the list at the following page of your Splunk environment: `/en-GB/static/docs/style/style-guide.html#icons`
 Here is an example showing an icon being displayed:
 
-`|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval text="<i class="fas fa-check"></i>"`
+`|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval text="<i class='fas fa-check'></i>"`
 
 
 

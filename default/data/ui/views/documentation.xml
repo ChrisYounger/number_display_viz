@@ -200,7 +200,7 @@ There are also some Splunk built-in icons that can be used. See the list at the 
           <br/>
 Here is an example showing an icon being displayed:
 <pre class="highlight">
-            <code>|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval text="&lt;i&gt;&lt;/i&gt;"</code>
+            <code>|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval text="&lt;i class='fas fa-check'&gt;&lt;/i&gt;"</code>
           </pre>
 
 
@@ -212,7 +212,7 @@ Here is an example showing an icon being displayed:
 <p>It is possible to use custom fonts (hosted on the internet) by overriding specific CSS classes in a HTML panel: <code>.number_display_viz-font1</code> .. <code>font5</code>. </p>
 <p>Example:</p>
 <pre class="highlight">
-            <code>&lt;html&gt;
+<code>&lt;html&gt;
 &lt;style&gt;
 @import url('https://fonts.googleapis.com/css?family=Teko:700&amp;display=swap');
 .number_display_viz-font1 {
@@ -221,7 +221,7 @@ Here is an example showing an icon being displayed:
 }
 &lt;/style&gt;
 &lt;/html&gt;</code>
-          </pre>
+</pre>
 
  
 <br/>
