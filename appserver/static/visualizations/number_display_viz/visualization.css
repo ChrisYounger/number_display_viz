@@ -57,23 +57,23 @@
 .number_display_viz-thin {
     font-weight: normal;
 }
-.number_display_viz-gf1 {
+.number_display_viz-font1 {
     font-family: 'Teko', sans-serif;
     font-weight: 700;
 }
-.number_display_viz-gf2 {
+.number_display_viz-font2 {
     font-family: 'Montserrat', sans-serif;
     font-weight: 900;
 }
-.number_display_viz-gf3 {
+.number_display_viz-font3 {
     font-family: 'Luckiest Guy', cursive;
     font-weight: 400;
 }
-.number_display_viz-gf4 {
+.number_display_viz-font4 {
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
 }
-.number_display_viz-gf5 {
+.number_display_viz-font5 {
     font-family: 'Roboto', sans-serif;
     font-weight: 400;
 }

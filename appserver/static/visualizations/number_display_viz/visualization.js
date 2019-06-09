@@ -757,7 +757,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    item.$svgShape.attr("fill", "url(#" + item.svgTextureId + ")");
 	                    item.$svg.appendTo(item.$wrapc2);
 
-	                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">' + item.svgGradient +  + item.svgString + '</svg>');
+	                    item.$svgPulse = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + item.svgViewbox + '" preserveAspectRatio="xMidYMid" style="position: absolute; top: 0; left: 0; opacity: 0.25; transform: scale(1); transition: transform,opacity 2s,2s;">' + item.svgGradient + item.svgString + '</svg>');
 	                    item.$svgPulseShape = item.$svgPulse.find(".number_display_viz-shape");
 	                    item.$svgPulseShape.attr("fill", "url(#" + item.svgTextureId + ")");
 	                    item.$svgPulse.prependTo(item.$wrapc2);
@@ -1070,7 +1070,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                // get the height so it forces a draw
 	                item.pulseInterval = setInterval(function(){
 	                    item.$svgPulse.one('transitionend webkitTransitionEnd oTransitionEnd', function () {
-	                        item.$svgPulse.css({"transition": "none"});
+	                        item.$svgPulse.css({"transition": "transform,opacity 0s,0s"});
 	                        // Read the height to force flush
 	                        item.$svgPulse.height();
 	                        item.$svgPulse.css({"transition": "transform,opacity 2s,2s","opacity":"0.25","transform":"scale(1)"});
