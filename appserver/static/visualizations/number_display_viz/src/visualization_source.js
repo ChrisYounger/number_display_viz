@@ -370,6 +370,7 @@ function(
                     }
                 }
             }
+
             // Figure out the size
             if (doAFullRedraw) {
                 // If "full" shape is selected, we force to one row
@@ -404,7 +405,10 @@ function(
                 if (! Array.isArray(viz.item[i].overtimedata)) {
                     viz.item[i].overtimedata = [];
                 }
-                viz.doDrawItem(viz.item[i], doAFullRedraw);
+                // Only draw if copntainer has size. Otherwise its hidden
+                if (viz.$container_wrap.width() > 0) {
+                    viz.doDrawItem(viz.item[i], doAFullRedraw);
+                }
             }
         },
 

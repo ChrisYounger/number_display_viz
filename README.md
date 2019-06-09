@@ -1,4 +1,4 @@
-# number_display_viz
+# Number Display viz
 
 A collection of ultra-configurable, single-statistic vizualisations for Splunk.
 
@@ -6,7 +6,8 @@ A collection of ultra-configurable, single-statistic vizualisations for Splunk.
 
 Copyright (C) 2018 Chris Younger I am a Splunk Professional Services consultant working for JDS Australia, in Brisbane Australia.
 
-[Source code](https://github.com/ChrisYounger/number_display_viz) | [Splunkbase](https://splunkbase.splunk.com/app/XXXX/) | [Questions, Bugs or Suggestions](https://splunkbase.splunk.com/app/XXXX/) | [My Splunk apps](https://splunkbase.splunk.com/apps/#/author/chrisyoungerjds)
+[Source code](https://github.com/ChrisYounger/number_display_viz) | [Splunkbase](https://splunkbase.splunk.com/app/4537/) | [Questions, Bugs or Suggestions](https://answers.splunk.com/app/questions/4537.html) | [My Splunk apps](https://splunkbase.splunk.com/apps/#/author/chrisyoungerjds)
+
 
 
 
@@ -39,6 +40,8 @@ These are the fields that can be overridden in data:
 |`max`|Number|Overrides the "max" limit|
 
 
+
+
 ## Formatting options
 
 ![screenshot](https://raw.githubusercontent.com/ChrisYounger/number_display_viz/master/static/options.png)
@@ -58,6 +61,7 @@ These are the fields that can be overridden in data:
 
 
 
+
 ## Icons
 The title, `text`, or `subtitle` fields allow for HTML injection. This allows icons to be used in place of text or numbers. 
 Any icon from the FontAwesome v5 Free icon sets can be used, the complete list is here: https://fontawesome.com/cheatsheet/
@@ -65,6 +69,7 @@ There are also some Splunk built-in icons that can be used. See the list at the 
 Here is an example showing an icon being displayed:
 
 `|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval text="<i class="fas fa-check"></i>"`
+
 
 
 
@@ -81,13 +86,15 @@ Example:
     font-family: 'Teko', sans-serif !important;
     font-weight: 700 !important;
 }
-<style>
-<html>
+</style>
+</html>
 ```
+
+
 
 ## Third party software
 
-The following third-party libraries are used by this app. Thank you!
+The following third-party software is used by this app. Thank you!
 
 * jQuery - MIT - https://jquery.com/
 * Chart.js - MIT - https://www.chartjs.org/
@@ -96,3 +103,4 @@ The following third-party libraries are used by this app. Thank you!
 * Fan SVGs are by mynamepong - Creative Commons BY 3.0 - https://www.flaticon.com/authors/mynamepong
 * SVG textures are by svgbackgrounds.com - Creative Commons Attribution-ShareAlike 4.0 License - https://www.svgbackgrounds.com
 * Four spinners from https://loading.io/
+* Google fonts
