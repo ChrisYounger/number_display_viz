@@ -30,6 +30,7 @@
                         <option value="a9">Shape - hexagon 2</option>
                         <option value="a10">Shape - hexagon 3</option>
                         <option value="a11">Shape - hexagon 4</option>
+                        <option value="nil">Blank (just text)</option>
                 </splunk-select>
         </splunk-control-group>
 
@@ -364,13 +365,6 @@
 
 
 <form class="splunk-formatter-section" section-label="Text">
-        <splunk-control-group label="Visibility">
-                <splunk-radio-input name="{{VIZ_NAMESPACE}}.textshow" value="yes">
-                        <option value="yes">Show</option>
-                        <option value="no">Hide</option>
-                </splunk-radio-input>
-        </splunk-control-group>
-
         <splunk-control-group label="Color">
                 <splunk-select name="{{VIZ_NAMESPACE}}.textmode" value="static" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
                         <option value="static">Manual</option>
@@ -401,8 +395,9 @@
                 </splunk-color-picker>
         </splunk-control-group>
 
-        <splunk-control-group label="Horiz. position">
+        <splunk-control-group label="Position">
                 <splunk-radio-input name="{{VIZ_NAMESPACE}}.textalign" value="center">
+                        <option value="hide">Hide</option>
                         <option value="left">Left</option>
                         <option value="center">Center</option>
                         <option value="right">Right</option>
@@ -510,8 +505,9 @@
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.titletext" value=""></splunk-text-input>
         </splunk-control-group>
 
-        <splunk-control-group label="Horiz. position">
+        <splunk-control-group label="Position">
                 <splunk-radio-input name="{{VIZ_NAMESPACE}}.titlealign" value="center">
+                        <option value="hide">Hide</option>
                         <option value="left">Left</option>
                         <option value="center">Center</option>
                         <option value="right">Right</option>
@@ -603,6 +599,7 @@
 
         <splunk-control-group label="Horiz. position">
                 <splunk-radio-input name="{{VIZ_NAMESPACE}}.subtitlealign" value="center">
+                        <option value="hide">Hide</option>
                         <option value="left">Left</option>
                         <option value="center">Center</option>
                         <option value="right">Right</option>

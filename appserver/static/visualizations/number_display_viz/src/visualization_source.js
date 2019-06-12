@@ -374,7 +374,7 @@ function(
             // Figure out the size
             if (doAFullRedraw) {
                 // If "full" shape is selected, we force to one row
-                if (viz.config.style === "a12" || viz.config.style === "a13") {
+                if (viz.config.style === "a12" || viz.config.style === "a13" || viz.config.style === "nil") {
                     // If we are auto detecting size, then only use one row viz.$container_wrap.width() viz.item.length viz.config.padding
                     viz.size = viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100));
                     viz.$container_wrap.css("flex-wrap","nowrap");
@@ -435,7 +435,7 @@ function(
                 item.$container = $('<div class="number_display_viz-wrap_item"></div>');
                 item.$svg = $();
                 item.$svgPulse = $();
-                item.$container.append(item.$wrapc2, item.$wrapc1, item.$overlayTitle, item.$overlaySubTitle);
+                item.$container.append(item.$wrapc2, item.$wrapc1);
                 viz.$container_wrap.append(item.$container);
                 item.svgTextureId = "texture_" + viz.instance_id + "_" + item.id;
                 
@@ -454,7 +454,13 @@ function(
                     item.$container.css({"margin-left": spacing + "px", "margin-right": spacing + "px"});
                 }
 
-                if (viz.config.textshow === "yes") {
+                if (viz.config.subtitlealign !== "hide") {
+                    item.$container.append(item.$overlaySubTitle);
+                }
+                if (viz.config.titlealign !== "hide") {
+                    item.$container.append(item.$overlayTitle);
+                }
+                if (viz.config.textalign !== "hide") {
                     item.$container.append(item.$overlayText);
                 }
 
