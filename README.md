@@ -13,24 +13,37 @@ Copyright (C) 2018 Chris Younger I am a Splunk Professional Services consultant 
 
 ## Usage
 
-This visualization can deal with most datasets you want to throw at it. However for the most reliable results, use a search like this:
+This visualization can deal with most datasets you want to throw at it. However for the most reliable results, use a search where the field names are exactly "value", "title" and "sparkline".
 
-`|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value` optionally: `by SPLIT_CATEGORY`
+```
+|stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value
+``` 
 
-If you want only one viz, then the SPLIT_CATEGORY is optional.  Additionally the configured viz properties can be overridden by specifically named data fields.
+For multiple items do this: 
+```
+| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value BY title
+```
 
+The configured viz formatting can be overridden in data by havign specifically named fields.
 Here is an example where the subtitle is supplied in the data:
 
-`|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value latest(SOME_VALUE2) as subtext by SPLIT_CATEGORY`
+```
+| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value latest(SOME_VALUE2) as subtext BY title
+```
 
 another way of doing the same thing is like so: 
 
-`|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval subtext = "something"`
+```
+| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value BY title | eval subtext = "something"
+```
 
 These are the fields that can be overridden in data:
 
 |Field|Type|Description|
 | --- | --- | --- |
+|`value`|Numeric|The value which will be used for threshold calculation and to set the gauge position or spinner speed. Viz will attempt to autoguess this field if not explicity supplied.|
+|`title`|String|The title of the metric which will be shown as a text overlay. Viz will attempt to autoguess this field if not explicity supplied.|
+|`sparkline`|sparkline array|The sparkline field to use as the area or line chart overlay. Viz will attempt to autoguess this field if not explicity supplied.|
 |`color`|HTML color code|Set the base color, overriding the thresholds. By using this field you can have whatever complicated threshold logic you like|
 |`primarycolor`|HTML color code|Similar to above but will only overide the primary color. The threshold color can be used seperately. The primary color is only used by the main element (the gauge, spinner or shape background) in the viz. |
 |`secondarycolor`|HTML color code|As above.|
