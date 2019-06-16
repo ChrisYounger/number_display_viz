@@ -59,6 +59,7 @@ function(
 
                 sparkorder: "bg",
                 sparkstyle: "area",
+                sparknulls: "gaps",
                 sparkcolormodeline: "auto",
                 sparkcolorline: "#0178c7",
                 sparkcolormodefill: "auto",
@@ -1101,8 +1102,16 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.areaCfg.data.datasets[0].pointBorderColor = item.areaCfg.data.datasets[0].borderColor;
                 item.areaCfg.data.datasets[0].pointBackgroundColor = item.areaCfg.data.datasets[0].borderColor;
                 item.areaCfg.data.datasets[0].pointRadius = 1;
-                item.areaCfg.data.datasets[0].data = item.overtimedata;
+                if (viz.config.sparknulls === "zero") {
+                    item.areaCfg.data.datasets[0].data = [];
+                    for (var m = 0; m < item.overtimedata.length; m++) {
+                        item.areaCfg.data.datasets[0].data.push(item.overtimedata[m] === null ? 0 : item.overtimedata[m]);
+                    }
+                } else {
+                    item.areaCfg.data.datasets[0].data = item.overtimedata;
+                }
                 item.areaCfg.data.datasets[0].fill = viz.config.sparkstyle == "area" ? 'origin' : false;
+                item.areaCfg.data.datasets[0].spanGaps = !!(viz.config.sparknulls === "span");
             }
             // in-data override
             if (item.hasOwnProperty("text")) {

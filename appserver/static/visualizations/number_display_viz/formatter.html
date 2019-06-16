@@ -275,6 +275,14 @@
                 </splunk-radio-input>
         </splunk-control-group>
 
+        <splunk-control-group label="Null values">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.sparknulls" value="gaps">
+                        <option value="gaps">Gaps</option>
+                        <option value="zero">Zero</option>
+                        <option value="span">Connect</option>
+                </splunk-radio-input>
+        </splunk-control-group>
+
         <splunk-control-group label="Line color">
                 <splunk-select name="{{VIZ_NAMESPACE}}.sparkcolormodeline" value="auto" style="vertical-align:top; display:inline-block; width:90px; margin-right:10px;">
                         <option value="static">Manual</option>

@@ -32,6 +32,7 @@ default.visualizations.custom.number_display_viz.number_display_viz.sparkalign =
 default.visualizations.custom.number_display_viz.number_display_viz.sparkalignv = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.sparkHeight = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.sparkWidth = <string>
+default.visualizations.custom.number_display_viz.number_display_viz.sparknulls = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.textshow = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.textmode = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.textcolor = <string>
