@@ -71,32 +71,32 @@
 <br/>
 
 <h2>Usage</h2>
-<p>This visualization can deal with most datasets you want to throw at it. However for the most reliable results, use a search like this:</p>
+<p>This visualization can deal with most datasets you want to throw at it. However for the most reliable results, use a search where the field names are exactly "value", "title" and "sparkline".</p>
 <pre class="highlight">
-            <code>|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value</code>
-          </pre>
+<code>|stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value</code>
+</pre>
 
 
-<p>For multiple items add: </p>
+<p>For multiple items do this: </p>
 <pre class="highlight">
-            <code>by SPLIT_CATEGORY</code>
-          </pre>
+<code>| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value BY title</code>
+</pre>
 
 
 <p>The configured viz properties can be overridden by specifically named data fields.</p>
 <p>Here is an example where the subtitle is supplied in the data:</p>
 <pre class="highlight">
-            <code>|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value latest(SOME_VALUE2) as subtext by SPLIT_CATEGORY</code>
-          </pre>
+<code>| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value latest(SOME_VALUE2) as subtext BY title</code>
+</pre>
 
 
 <p>another way of doing the same thing is like so: </p>
 <pre class="highlight">
-            <code>|stats sparkline(avg(SOME_VALUE)) as Sparkline latest(SOME_VALUE) as Value by SPLIT_CATEGORY | eval subtext = "something"</code>
-          </pre>
+<code>| rename SPLIT_CATEGORY as title | stats sparkline(avg(SOME_VALUE)) as sparkline latest(SOME_VALUE) as value BY title | eval subtext = "something"</code>
+</pre>
 
 
-<p>These are the fields that can be overridden in data:</p>
+<p>These are the fields that can be provided in data:</p>
 <table class="table">
 <thead>
 <tr>
@@ -106,6 +106,27 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+                  <code>value</code>
+                </td>
+<td>Numeric</td>
+<td>The value which will be used for threshold calculation and to set the gauge position or spinner speed. Viz will attempt to autoguess this field if not explicity supplied.</td>
+</tr>
+<tr>
+<td>
+                  <code>title</code>
+                </td>
+<td>String</td>
+<td>The title of the metric which will be shown as a text overlay. Viz will attempt to autoguess this field if not explicity supplied.</td>
+</tr>
+<tr>
+<td>
+                  <code>sparkline</code>
+                </td>
+<td>sparkline array</td>
+<td>The sparkline field to use as the area or line chart overlay. Viz will attempt to autoguess this field if not explicity supplied.</td>
+</tr>
 <tr>
 <td>
                   <code>color</code>
