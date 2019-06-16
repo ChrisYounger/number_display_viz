@@ -322,6 +322,9 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                color: "color",
 	                primarycolor: "primarycolor",
 	                secondarycolor: "secondarycolor",
+	                value: "value",
+	                sparkline: "sparkline",
+	                title: "title",
 	                text: "text",
 	                subtitle: "subtitle",
 	                min: "min",
@@ -362,7 +365,6 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        title: "",
 	                        value: "",
 	                    };
-	                    var startCol = -1;
 	                    // viz.item array will exist if this is an already created item
 	                    if (viz.item.length > i) {
 	                        item = viz.item[i];
@@ -373,44 +375,34 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    if (datamode === 2) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                        startCol = 2;
 	                    } else if (datamode === 3) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = currentRow[1];
-	                        startCol = 2;
 	                    } else if (datamode === 4) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                        startCol = 3;
 	                    } else if (datamode === 5) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
 	                        item.value = currentRow[2];
-	                        startCol = 3;
 	                    } else if (datamode === 6) {
 	                        item.title = currentRow[0];
 	                        item.value = currentRow[1];
 	                        item.overtimedata = currentRow[2].slice(1);
-	                        startCol = 3;
 	                    } else if (datamode === 7) {
 	                        item.title = currentRow[0];
 	                        item.value = currentRow[1];
-	                        startCol = 2;
 	                    } else if (datamode === 8) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                        startCol = 2;
 	                    } else if (datamode === 9) {
 	                        item.value = currentRow[0];
-	                        startCol = 1;
 	                    }
 	                    // overrides are columns in the data with specific names
-	                    if (startCol !== -1) {
-	                        for (var k = startCol; k < viz.data.fields.length; k++) {
-	                            if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
-	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
-	                            }
+	                    for (var k = 0; k < viz.data.fields.length; k++) {
+	                        if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
+	                            item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
 	                        }
 	                    }
 	                }
