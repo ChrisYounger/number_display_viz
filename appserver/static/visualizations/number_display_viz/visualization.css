@@ -3,13 +3,10 @@
 .number_display_viz-container {
     /*position: relative; */
     display: flex;
-    justify-content: space-evenly;
-
 }
 .number_display_viz-wrap_item {
     position: relative; 
     width: 100%;
-    top: 50%;
     box-sizing: border-box;
 }
 .number_display_viz-overlay_text {

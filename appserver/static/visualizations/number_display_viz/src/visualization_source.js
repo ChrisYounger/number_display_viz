@@ -369,8 +369,7 @@ function(
                 // If "full" shape is selected, we force to one row
                 if (viz.config.style === "a12" || viz.config.style === "a13" || viz.config.style === "nil") {
                     // If we are auto detecting size, then only use one row viz.$container_wrap.width() viz.item.length viz.config.padding
-                    viz.size = viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100));
-                    viz.$container_wrap.css("flex-wrap","nowrap");
+                    viz.size = (viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100)));
                     var desired_height = viz.$container_wrap.height();
                     if (viz.config.size > 0) {
                         desired_height = viz.config.size;
@@ -379,16 +378,20 @@ function(
                     viz.config.mainHeight = desired_height / viz.size;
 
                 } else if (viz.config.size > 0) {
-                    viz.size = viz.config.size;
-                    viz.$container_wrap.css("flex-wrap","wrap");
+                    viz.size = Number(viz.config.size);
 
                 } else {
                     // If we are auto detecting size, then only use one row 
-                    viz.size = Math.min(viz.$container_wrap.height(), viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100))) ;
-                    viz.$container_wrap.css("flex-wrap","nowrap");
-
+                    viz.size = Math.max(10, Math.min(viz.$container_wrap.height() / (1 + viz.config.padding / 100), viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100))));
                 }
-                viz.$container_wrap.empty();
+                viz.padding = (viz.size * (viz.config.padding / 100)) / 2;
+                viz.rows = ((viz.size + (2 * viz.padding)) * viz.item.length) / (viz.$container_wrap.width() - 10);
+                //console.log("Total rows: ", viz.rows);
+                if (viz.rows > 1.05) {
+                    viz.$container_wrap.css({"flex-wrap":"wrap", "justify-content": "center", "align-content": "flex-start"}).empty();
+                } else {
+                    viz.$container_wrap.css({"flex-wrap":"nowrap", "justify-content": "space-evenly"}).empty(); // align-content doesnt work when there is one line of items
+                }
             }
             for (i = 0; i < viz.item.length; i++) {
                 // Two final data validation checks
@@ -398,7 +401,7 @@ function(
                 if (! Array.isArray(viz.item[i].overtimedata)) {
                     viz.item[i].overtimedata = [];
                 }
-                // Only draw if copntainer has size. Otherwise its hidden
+                // Only draw if container has size. Otherwise its hidden
                 if (viz.$container_wrap.width() > 0) {
                     viz.doDrawItem(viz.item[i], doAFullRedraw);
                 }
@@ -431,7 +434,6 @@ function(
                 item.$container.append(item.$wrapc2, item.$wrapc1);
                 viz.$container_wrap.append(item.$container);
                 item.svgTextureId = "texture_" + viz.instance_id + "_" + item.id;
-                
                 if (viz.hasOwnProperty("drilldown_field")) {
                     item.$container.css("cursor","pointer").on("click", function(browserEvent){
                         var data = {};
@@ -441,10 +443,6 @@ function(
                             data: data
                         }, browserEvent);
                     });
-                }
-                if (viz.config.size > 0) {
-                    var spacing = (viz.config.size * (viz.config.padding / 100)) / 2;
-                    item.$container.css({"margin-left": spacing + "px", "margin-right": spacing + "px"});
                 }
 
                 if (viz.config.subtitlealign !== "hide") {
@@ -741,15 +739,15 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 } else if (viz.config.sparkorder === "bg") {
                     item.$wrapc2.css("z-index", 2);
                 }
-                
+
                 item.height = (viz.size * viz.config.mainHeight);
                 item.width = (viz.size * viz.config.mainWidth);
                 item.$container.css({
-                    "margin-top" :  (-1 * item.height / 2) + "px",
                     "height": item.height + "px", 
-                    "width": item.width + "px"
+                    "width": item.width + "px",
+                    "margin": viz.padding + "px"
                 });
-                
+
                 // Sparkline
                 item.heightSpark = item.height * (viz.config.sparkHeight / 100);
                 item.widthSpark = item.width * (viz.config.sparkWidth / 100) ;
@@ -761,7 +759,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     "height": item.heightSpark + "px",
                     "width": item.widthSpark + "px",
                 });
-                
+
                 // Text Value overlay
                 var textfontsize = (item.height * 0.2 * (Number(viz.config.textsize) / 100));
                 item.$overlayText.css({
@@ -793,8 +791,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.$overlayTitle.css({
                     "font-size": titlefontsize + "px", 
                     "margin-top": (item.height * (viz.config.titlealignv / 100) - (titlefontsize * 0.5)) + "px", 
-                    "width": item.width + "px",
-                    "margin-left": (item.width / 2 * -1) + "px", 
+                    "width": (item.width * 0.85) + "px",
+                    "margin-left": ((item.width * 0.85) / 2 * -1) + "px", 
                     "left": "50%",
                     "text-align": viz.config.titlealign,
                 }).addClass(viz.config.titlefont);
@@ -816,8 +814,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.$overlaySubTitle.css({
                     "font-size": subtitlefontsize + "px", 
                     "margin-top": (item.height * (viz.config.subtitlealignv / 100) - (subtitlefontsize * 0.5)) + "px", 
-                    "width": item.width + "px",
-                    "margin-left": (item.width / 2 * -1) + "px", 
+                    "width": (item.width * 0.85) + "px",
+                    "margin-left": ((item.width * 0.85) / 2 * -1) + "px", 
                     "left": "50%",
                     "text-align": viz.config.subtitlealign,
                 }).addClass(viz.config.subtitlefont);
