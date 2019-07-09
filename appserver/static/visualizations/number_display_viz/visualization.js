@@ -85,6 +85,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                size: "",
 	                min: "0",
 	                max: "100",
+	                maxrows: "200",
 	                nodatacolor: "#0178c7",
 	                thresholdcol1: "#1a9035",
 	                thresholdcol2: "#d16f18",
@@ -296,10 +297,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            // Can't continue becuase of data issues
 	            if (! viz.data.rows.length || datamode === 0) {
 	                viz.$container_wrap.empty();
-	                var $errordiv = $('<div style="text-align:center; font-size: 16px; display: block;">Unexpected data format.</div>');
+	                var $errordiv = $('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Unexpected data format.</div>');
 	                viz.$container_wrap.append($errordiv);
 	                return;
 	            }
+
 
 	            if (viz.data.rows.length !== viz.currentRows) {
 	                doAFullRedraw = true;
@@ -407,6 +409,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        }
 	                    }
 	                }
+	            }
+
+	            // Can't continue becuase too many rows
+	            if (viz.item.length > Number(viz.config.maxrows)) {
+	                viz.$container_wrap.empty();
+	                var $errordiv = $('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Too many rows of data (Total rows:' + viz.item.length + ', Limit: ' + viz.config.maxrows + ')</div>');
+	                viz.$container_wrap.append($errordiv);
+	                return;
 	            }
 
 	            // Figure out the size
