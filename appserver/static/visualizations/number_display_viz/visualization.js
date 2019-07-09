@@ -242,7 +242,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 
 	            // Figure out what the supplied data looks like
-	            var datamode = 0;
+	            viz.datamode = 0;
 	            var currentRow = viz.data.rows[0];
 	            if (viz.data.rows.length) {
 	                // The data should always be an array
@@ -251,51 +251,57 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    if (currentRow.length > 1) { 
 	                        // Special case that looks like it is probably data from |timechart command
 	                        if (viz.data.fields[0].name === "_time" && viz.data.rows.length > 3) {
-	                            datamode = 1;
+	                            viz.datamode = 1;
 	                        
 	                        // Format: Sparkline, Value?
 	                        } else if (Array.isArray(currentRow[0]) && currentRow[0][0] === "##__SPARKLINE__##") {
-	                            datamode = 2;
+	                            viz.datamode = 2;
 	                            // check if there is another column that we can use for the value
 	                            if (! Array.isArray(currentRow[1])) {
-	                                datamode = 3;
+	                                viz.datamode = 3;
 	                            }
 	                        
 	                        // Format: Label, Sparkline, Value?
 	                        } else if (! Array.isArray(currentRow[0]) && Array.isArray(currentRow[1]) && currentRow[1][0] === "##__SPARKLINE__##") {
-	                            datamode = 4;
+	                            viz.datamode = 4;
 	                            viz.drilldown_field = viz.data.fields[0].name;
 	                            // check if there is another column that we can use for the value
 	                            if (currentRow.length > 2 && ! Array.isArray(currentRow[2])) {
-	                                datamode = 5;
+	                                viz.datamode = 5;
 	                            }
 	                            
 	                        // Format: Label, Value, Sparkline
 	                        } else if (currentRow.length > 2 && ! Array.isArray(currentRow[0]) && ! Array.isArray(currentRow[1]) && Array.isArray(currentRow[2]) && currentRow[2][0] === "##__SPARKLINE__##") {
 	                            viz.drilldown_field = viz.data.fields[0].name;
-	                            datamode = 6;
+	                            viz.datamode = 6;
 
 	                        // Format: Label, Value
 	                        } else if (! Array.isArray(currentRow[0]) && ! Array.isArray(currentRow[1])) {
 	                            viz.drilldown_field = viz.data.fields[0].name;
-	                            datamode = 7;
+	                            viz.datamode = 7;
 
 	                        } else {
 	                            // Unable to handle data format
 	                        }
 	                    // Single column, if its a sparkline
 	                    } else if (Array.isArray(currentRow[0]) && currentRow[0][0] === "##__SPARKLINE__##") {
-	                        datamode = 8;
+	                        viz.datamode = 8;
 	                    // Single column, it must be a value
 	                    } else {
-	                        datamode = 9;
+	                        viz.datamode = 9;
 	                    }
 	                } else {
 	                    // Unable to handle data format
 	                }
 	            }
+	            // Check to see if there is a field specifically called "title" in which case it will override
+	            for (var j = 0; j < viz.data.fields.length; j++) {
+	                if (viz.datamode !== 1 && viz.data.fields[j].name === "title") {
+	                    viz.drilldown_field = "title";
+	                }
+	            }
 	            // Can't continue becuase of data issues
-	            if (! viz.data.rows.length || datamode === 0) {
+	            if (! viz.data.rows.length || viz.datamode === 0) {
 	                viz.$container_wrap.empty();
 	                var $errordiv = $('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Unexpected data format.</div>');
 	                viz.$container_wrap.append($errordiv);
@@ -334,8 +340,8 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                max: "max",
 	            };
 
-	            // datamode = 1 is "|timechart" data. it doesnt allow for overrides
-	            if (datamode === 1) {
+	            // viz.datamode = 1 is "|timechart" data. it doesnt allow for overrides
+	            if (viz.datamode === 1) {
 	                // Last element in the _timechart array will be the _span field which is not needed
 	                for (j = 1; j < viz.data.fields.length; j++) {
 	                    if (viz.data.fields[j].name === "_span" && viz.data.fields.length - 1 === j) {
@@ -375,31 +381,31 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        viz.item.push(item);
 	                    }
 	                    currentRow = viz.data.rows[i];
-	                    if (datamode === 2) {
+	                    if (viz.datamode === 2) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                    } else if (datamode === 3) {
+	                    } else if (viz.datamode === 3) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = currentRow[1];
-	                    } else if (datamode === 4) {
+	                    } else if (viz.datamode === 4) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                    } else if (datamode === 5) {
+	                    } else if (viz.datamode === 5) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
 	                        item.value = currentRow[2];
-	                    } else if (datamode === 6) {
+	                    } else if (viz.datamode === 6) {
 	                        item.title = currentRow[0];
 	                        item.value = currentRow[1];
 	                        item.overtimedata = currentRow[2].slice(1);
-	                    } else if (datamode === 7) {
+	                    } else if (viz.datamode === 7) {
 	                        item.title = currentRow[0];
 	                        item.value = currentRow[1];
-	                    } else if (datamode === 8) {
+	                    } else if (viz.datamode === 8) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = item.overtimedata[item.overtimedata.length - 1];
-	                    } else if (datamode === 9) {
+	                    } else if (viz.datamode === 9) {
 	                        item.value = currentRow[0];
 	                    }
 	                    // overrides are columns in the data with specific names
@@ -463,6 +469,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	        },
 
+	        sanitise: function(val) {
+	            return val.toString().replace(/\W+/g, "_")
+	        },
+
 	        doDrawItem: function(item, doAFullRedraw){
 	            var viz = this;
 	            var i, vbmultipler;
@@ -489,11 +499,39 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                item.$container.append(item.$wrapc2, item.$wrapc1);
 	                viz.$container_wrap.append(item.$container);
 	                item.svgTextureId = "texture_" + viz.instance_id + "_" + item.id;
-	                if (viz.hasOwnProperty("drilldown_field")) {
+
+	                // Drilldown only available if there is a title field
+	                if (item.title) {
 	                    item.$container.css("cursor","pointer").on("click", function(browserEvent){
 	                        var data = {};
-	                        data[viz.drilldown_field] = item.title;
-	                        viz.drilldown({
+	                        if (viz.drilldown_field) {
+	                            data[viz.drilldown_field] = item.title;
+	                        } else {
+	                            data["title"] = item.title;
+	                        }
+	                        var defaultTokenModel = splunkjs.mvc.Components.get('default');
+	                        var submittedTokenModel = splunkjs.mvc.Components.get('submitted');
+	                        if (defaultTokenModel) {
+	                            defaultTokenModel.set("click.name", item.title);
+	                            defaultTokenModel.set("click.value", item.value);
+	                        } 
+	                        if (submittedTokenModel) {
+	                            submittedTokenModel.set("click.name", item.title);
+	                            submittedTokenModel.set("click.value", item.value);
+	                        }
+	                        if (viz.datamode !== 1) {
+	                            for (var k = 0; k < viz.data.fields.length; k++) {
+	                                var token_name = "row." + viz.sanitise(viz.data.fields[k].name);
+	                                console.log("Setting token $" +  token_name + "$ to \"" + viz.data.rows[item.id][k] + "\"");
+	                                if (defaultTokenModel) {
+	                                    defaultTokenModel.set(token_name, viz.data.rows[item.id][k]);
+	                                } 
+	                                if (submittedTokenModel) {
+	                                    submittedTokenModel.set(token_name, viz.data.rows[item.id][k]);
+	                                }
+	                            }
+	                        }
+	                         viz.drilldown({
 	                            action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
 	                            data: data
 	                        }, browserEvent);
@@ -949,8 +987,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                                intersect: false,
 	                                callbacks: {
 	                                    label: function(tooltipItem, data) {
-	                                        return "";
-	                                    } 
+	                                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
+	                                        if (label) {
+	                                            label += ': ';
+	                                        }
+	                                        label += Math.round(tooltipItem.yLabel * 100) / 100;
+	                                        return label;
+	                                    }
 	                                }
 	                            },
 	                            hover: {
