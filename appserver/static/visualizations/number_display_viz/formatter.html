@@ -837,9 +837,15 @@
 </form>
 
 <form class="splunk-formatter-section" section-label="Help">
-        <splunk-control-group label=" ">
-        <div style="margin:40px 10px 40px 0;">
-                <a href="/app/number_display_viz/documentation" target="_blank">Examples and Documentation</a>
-        </div>
+        <splunk-control-group>
+        <div style="margin:40px 10px 10px -100px">
+                <div>Recognised field names: <code>title</code>, <code>value</code>, <code>sparkline</code>, <code>text</code>, <code>subtitle</code>, <code>color</code>, <code>primarycolor</code>, <code>secondarycolor</code>, <code>min</code>, <code>max</code></div>
+                <div style="margin-top:30px;">Example queries:</div>
+                <div style="margin-top:10px;"><code>... | table title value</code></div>
+                <div>or</div>
+                <div><code>... | stats avg(value) as value sparkline(avg(value)) as sparkline by title</code></div>
+                <div style="margin-top:30px;"><a href="/app/number_display_viz/documentation" target="_blank">Examples and Documentation</a></div>
+                <div style="margin-top:40px;">By Chris Younger - <a href="https://splunkbase.splunk.com/apps/#/author/chrisyoungerjds" target="_blank">My other apps</a></div>
+        </div> 
         </splunk-control-group>
 </form>

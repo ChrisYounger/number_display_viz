@@ -111,21 +111,21 @@
                   <code>value</code>
                 </td>
 <td>Numeric</td>
-<td>The value which will be used for threshold calculation and to set the gauge position or spinner speed. Viz will attempt to autoguess this field if not explicity supplied.</td>
+<td>The value which will be used for threshold calculation and to set the gauge position or spinner speed. Viz will attempt to guess this field if not explicity supplied.</td>
 </tr>
 <tr>
 <td>
                   <code>title</code>
                 </td>
 <td>String</td>
-<td>The title of the metric which will be shown as a text overlay. Viz will attempt to autoguess this field if not explicity supplied.</td>
+<td>The title of the metric which will be shown as a text overlay. Viz will attempt to guess this field if not explicity supplied.</td>
 </tr>
 <tr>
 <td>
                   <code>sparkline</code>
                 </td>
 <td>sparkline array</td>
-<td>The sparkline field to use as the area or line chart overlay. Viz will attempt to autoguess this field if not explicity supplied.</td>
+<td>The sparkline field to use as the area or line chart overlay. Viz will attempt to guess this field if not explicity supplied.</td>
 </tr>
 <tr>
 <td>
@@ -153,7 +153,7 @@
                   <code>text</code>
                 </td>
 <td>String</td>
-<td>If supplied, this field enables overriding what would be shown as the numeric value</td>
+<td>If supplied, this field enables overriding what would be shown as the numeric value.</td>
 </tr>
 <tr>
 <td>
@@ -243,6 +243,12 @@ Here is an example showing an icon being displayed:
 &lt;/style&gt;
 &lt;/html&gt;</code>
 </pre>
+<br/>
+<br/>
+<br/>
+
+<h2>Drilldowns and tokens</h2>
+<p>As long as there is a "title" field (explicity supplied or guessed) then drilldowns will be enabled. All data fields are automatically created as tokens when clicked, named like so: <code>$row.&lt;fieldname&gt;$</code>. Tokens <code>$click.name$</code> and <code>$click.value$</code> are also created. <em>Drilldown to search</em> also works as normal.</p>
 
  
 <br/>
