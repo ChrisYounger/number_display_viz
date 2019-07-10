@@ -10,7 +10,8 @@ function(
     vizUtils,
     Chart
 ) {
-
+    // known issues in IE11: spinners dont spin, centering doesnt work
+    // TODO -  set height of panel to auto?
     var vizObj = {
         initialize: function() {
             SplunkVisualizationBase.prototype.initialize.apply(this, arguments);
@@ -169,6 +170,10 @@ function(
             viz.config.spinnerspeedmax = Number(viz.config.spinnerspeedmax);
             viz.data = data;
             viz.scheduleDraw();
+
+            $(window).off("resize.number_display_viz").on("resize.number_display_viz", function () {
+                viz.scheduleDraw();
+            });
         },
 
         // debounce the draw
@@ -189,6 +194,7 @@ function(
 
             // Keep track of the container size the config used so we know if we need to redraw teh whole page
             viz.config.containerSize = viz.$container_wrap.height();
+            viz.config.containerWidth = viz.$container_wrap.width();
             var serialised = JSON.stringify(viz.config);
             var doAFullRedraw = false;
             if (viz.alreadyDrawn !== serialised) {
@@ -250,19 +256,17 @@ function(
                 }
             }
             // Check to see if there is a field specifically called "title" in which case it will override
-            for (var j = 0; j < viz.data.fields.length; j++) {
-                if (viz.datamode !== 1 && viz.data.fields[j].name === "title") {
+            for (var m = 0; m < viz.data.fields.length; m++) {
+                if (viz.datamode !== 1 && viz.data.fields[m].name === "title") {
                     viz.drilldown_field = "title";
                 }
             }
             // Can't continue becuase of data issues
             if (! viz.data.rows.length || viz.datamode === 0) {
                 viz.$container_wrap.empty();
-                var $errordiv = $('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Unexpected data format.</div>');
-                viz.$container_wrap.append($errordiv);
+                viz.$container_wrap.append('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Unexpected data format.</div>');
                 return;
             }
-
 
             if (viz.data.rows.length !== viz.currentRows) {
                 doAFullRedraw = true;
@@ -375,18 +379,31 @@ function(
             // Can't continue becuase too many rows
             if (viz.item.length > Number(viz.config.maxrows)) {
                 viz.$container_wrap.empty();
-                var $errordiv = $('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Too many rows of data (Total rows:' + viz.item.length + ', Limit: ' + viz.config.maxrows + ')</div>');
-                viz.$container_wrap.append($errordiv);
+                viz.$container_wrap.append('<div style="text-align: center; width:100%; color: #818d99; line-height: 3;">Too many rows of data (Total rows:' + viz.item.length + ', Limit: ' + viz.config.maxrows + ')</div>');
                 return;
             }
 
             // Figure out the size
             if (doAFullRedraw) {
+                viz.paddingleftpercent = 0;
+                viz.paddingtoppercent = null;
+                var paddingparts = viz.config.padding.split(" ");
+                if (paddingparts.length == 2) {
+                    viz.paddingtoppercent = paddingparts[0];
+                    viz.paddingleftpercent = paddingparts[1];
+                } else if  (paddingparts.length == 1) {
+                    viz.paddingleftpercent = paddingparts[0];
+                }
                 // If "full" shape is selected, we force to one row
                 if (viz.config.style === "a12" || viz.config.style === "a13" || viz.config.style === "nil") {
-                    // If we are auto detecting size, then only use one row viz.$container_wrap.width() viz.item.length viz.config.padding
-                    viz.size = (viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100)));
-                    var desired_height = viz.$container_wrap.height();
+                    // If we are auto detecting size, then only use one row viz.$container_wrap.width() viz.item.length viz.config.paddingleftpercent
+                    viz.size = (viz.$container_wrap.width() / (viz.item.length * (1 + viz.paddingleftpercent / 100)));
+                    var desired_height;
+                    if (viz.paddingtoppercent !== null) {
+                        desired_height = viz.$container_wrap.height() / (1 + viz.paddingtoppercent / 100);
+                    } else {
+                        desired_height = viz.$container_wrap.height();
+                    }
                     if (viz.config.size > 0) {
                         desired_height = viz.config.size;
                     }
@@ -398,15 +415,27 @@ function(
 
                 } else {
                     // If we are auto detecting size, then only use one row 
-                    viz.size = Math.max(10, Math.min(viz.$container_wrap.height() / (1 + viz.config.padding / 100), viz.$container_wrap.width() / (viz.item.length * (1 + viz.config.padding / 100))));
+                    // When size isnt specified, and we are doing one row, the padding only affects left/right.    / (1 + viz.config.padding / 100)
+                    // We could have allowed the padding to affect top as well, which would allow users to create more writespace for putting sparklines etc.
+                    // Ideally there needs to be two margin options
+                    viz.size = viz.$container_wrap.width() / (viz.item.length * (1 + viz.paddingleftpercent / 100))
+                    if (viz.paddingtoppercent !== null) {
+                        viz.size = Math.min(viz.$container_wrap.height() / (1 + viz.paddingtoppercent / 100), viz.size);
+                    } else {
+                        viz.size = Math.min((viz.$container_wrap.height() - 20), viz.size);
+                    }
+                    viz.size = Math.max(50, viz.size);
                 }
-                viz.padding = (viz.size * (viz.config.padding / 100)) / 2;
-                viz.rows = ((viz.size + (2 * viz.padding)) * viz.item.length) / (viz.$container_wrap.width() - 10);
+                viz.paddingleftpixels = (viz.size * (viz.paddingleftpercent / 100)) / 2;
+                if (viz.paddingtoppercent !== null) {
+                    viz.paddingtoppixels = (viz.size * (viz.paddingtoppercent / 100)) / 2;
+                }
+                viz.rows = ((viz.size + (2 * viz.paddingleftpixels)) * viz.item.length) / (viz.$container_wrap.width() - 10);
                 //console.log("Total rows: ", viz.rows);
                 if (viz.rows > 1.05) {
                     viz.$container_wrap.css({"flex-wrap":"wrap", "justify-content": "center", "align-content": "flex-start"}).empty();
                 } else {
-                    viz.$container_wrap.css({"flex-wrap":"nowrap", "justify-content": "space-evenly"}).empty(); // align-content doesnt work when there is one line of items
+                    viz.$container_wrap.css({"flex-wrap":"nowrap", "justify-content": "center"}).empty(); // align-content doesnt work when there is one line of items
                 }
             }
             for (i = 0; i < viz.item.length; i++) {
@@ -425,7 +454,7 @@ function(
         },
 
         sanitise: function(val) {
-            return val.toString().replace(/\W+/g, "_")
+            return val.toString().replace(/\W+/g, "_");
         },
 
         doDrawItem: function(item, doAFullRedraw){
@@ -462,7 +491,7 @@ function(
                         if (viz.drilldown_field) {
                             data[viz.drilldown_field] = item.title;
                         } else {
-                            data["title"] = item.title;
+                            data.title = item.title;
                         }
                         var defaultTokenModel = splunkjs.mvc.Components.get('default');
                         var submittedTokenModel = splunkjs.mvc.Components.get('submitted');
@@ -796,6 +825,22 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     "margin": viz.padding + "px"
                 });
 
+                if (viz.paddingtoppercent !== null) {
+                    if (viz.item.length === 1) { 
+                        item.$container.css({"margin": viz.paddingtoppixels + "px auto"});
+                    } else {
+                        item.$container.css({"margin": viz.paddingtoppixels + "px " + viz.paddingleftpixels + "px"});
+                    }
+                } else {
+                    if (viz.item.length === 1) { 
+                        item.$container.css({"margin": "10px auto"});
+                    } else if (viz.rows > 1.05) {
+                        item.$container.css({"margin": viz.paddingleftpixels + "px"});
+                    } else {
+                        item.$container.css({"margin": "10px " + viz.paddingleftpixels + "px"});
+                    }
+                }
+
                 // Sparkline
                 item.heightSpark = item.height * (viz.config.sparkHeight / 100);
                 item.widthSpark = item.width * (viz.config.sparkWidth / 100) ;
@@ -822,9 +867,9 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 }).addClass(viz.config.textfont);
 
                 if (viz.config.textalign === "left") {
-                    item.$overlayText.css({"padding-left": item.width * 0.1 + "px"});
+                    item.$overlayText.css({"padding-left": item.width * 0.075 + "px"});
                 } else if (viz.config.textalign === "right") {
-                    item.$overlayText.css({"padding-right": item.width * 0.1 + "px"});
+                    item.$overlayText.css({"padding-right": item.width * 0.075 + "px"});
                 }
 
                 if (viz.config.textdrop === "yes") {
@@ -846,9 +891,9 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 }).addClass(viz.config.titlefont);
 
                 if (viz.config.titlealign === "left") {
-                    item.$overlayTitle.css({"padding-left": item.width * 0.1 + "px"});
+                    item.$overlayTitle.css({"padding-left": item.width * 0.075 + "px"});
                 } else if (viz.config.titlealign === "right") {
-                    item.$overlayTitle.css({"padding-right": item.width * 0.1 + "px"});
+                    item.$overlayTitle.css({"padding-right": item.width * 0.075 + "px"});
                 }
                 if (viz.config.titledrop === "yes") {
                     item.$overlayTitle.css({"text-shadow": "1px 1px 1px " + viz.config.titledropcolor});
@@ -869,9 +914,9 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 }).addClass(viz.config.subtitlefont);
 
                 if (viz.config.subtitlealign === "left") {
-                    item.$overlaySubTitle.css({"padding-left": item.width * 0.1 + "px"});
+                    item.$overlaySubTitle.css({"padding-left": item.width * 0.075 + "px"});
                 } else if (viz.config.subtitlealign === "right") {
-                    item.$overlaySubTitle.css({"padding-right": item.width * 0.1 + "px"});
+                    item.$overlaySubTitle.css({"padding-right": item.width * 0.075 + "px"});
                 }
                 if (viz.config.subtitledrop === "yes") {
                     item.$overlaySubTitle.css({"text-shadow": "1px 1px 1px " + viz.config.subtitledropcolor});
@@ -942,12 +987,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                                 intersect: false,
                                 callbacks: {
                                     label: function(tooltipItem, data) {
-                                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += Math.round(tooltipItem.yLabel * 100) / 100;
-                                        return label;
+                                        return "";
                                     }
                                 }
                             },
@@ -1162,7 +1202,7 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     item.areaCfg.data.datasets[0].data = item.overtimedata;
                 }
                 item.areaCfg.data.datasets[0].fill = viz.config.sparkstyle == "area" ? 'origin' : false;
-                item.areaCfg.data.datasets[0].spanGaps = !!(viz.config.sparknulls === "span");
+                item.areaCfg.data.datasets[0].spanGaps = (viz.config.sparknulls === "span");
             }
             // in-data override
             if (item.hasOwnProperty("text")) {
