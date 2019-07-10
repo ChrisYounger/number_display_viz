@@ -42,6 +42,7 @@ function(
                 min: "0",
                 max: "100",
                 maxrows: "200",
+                autopanelheight: "false",
                 nodatacolor: "#0178c7",
                 thresholdcol1: "#1a9035",
                 thresholdcol2: "#d16f18",
@@ -385,6 +386,11 @@ function(
 
             // Figure out the size
             if (doAFullRedraw) {
+
+                if (viz.config.autopanelheight === "true") {
+                    viz.$container_wrap.parentsUntil(".ui-resizable").parent().css("height","auto");
+                }
+
                 viz.paddingleftpercent = 0;
                 viz.paddingtoppercent = null;
                 var paddingparts = viz.config.padding.split(" ");

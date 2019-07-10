@@ -5,6 +5,7 @@ default.visualizations.custom.number_display_viz.number_display_viz.size = <stri
 default.visualizations.custom.number_display_viz.number_display_viz.min = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.max = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.maxrows = <string>
+default.visualizations.custom.number_display_viz.number_display_viz.autopanelheight = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.nodatacolor = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.thresholdcol1 = <string>
 default.visualizations.custom.number_display_viz.number_display_viz.thresholdcol2 = <string>
