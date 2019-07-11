@@ -874,8 +874,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                     "line-height": (textfontsize * 1.1) + "px", 
                     "margin-top": (item.height * (viz.config.textalignv / 100) - (textfontsize * 0.5)) + "px", 
                     "height" : (textfontsize * 2) + "px",
-                    "width": item.width + "px",
-                    "margin-left": (item.width / 2 * -1) + "px", 
+                    "width": (item.width * 0.9) + "px",
+                    "margin-left": ((item.width * 0.9) / 2 * -1) + "px", 
                     "left": "50%",
                     "text-align": viz.config.textalign,
                 }).addClass(viz.config.textfont);
@@ -898,8 +898,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.$overlayTitle.css({
                     "font-size": titlefontsize + "px", 
                     "margin-top": (item.height * (viz.config.titlealignv / 100) - (titlefontsize * 0.5)) + "px", 
-                    "width": (item.width * 0.85) + "px",
-                    "margin-left": ((item.width * 0.85) / 2 * -1) + "px", 
+                    "width": (item.width * 0.9) + "px",
+                    "margin-left": ((item.width * 0.9) / 2 * -1) + "px", 
                     "left": "50%",
                     "text-align": viz.config.titlealign,
                 }).addClass(viz.config.titlefont);
@@ -921,8 +921,8 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
                 item.$overlaySubTitle.css({
                     "font-size": subtitlefontsize + "px", 
                     "margin-top": (item.height * (viz.config.subtitlealignv / 100) - (subtitlefontsize * 0.5)) + "px", 
-                    "width": (item.width * 0.85) + "px",
-                    "margin-left": ((item.width * 0.85) / 2 * -1) + "px", 
+                    "width": (item.width * 0.9) + "px",
+                    "margin-left": ((item.width * 0.9) / 2 * -1) + "px", 
                     "left": "50%",
                     "text-align": viz.config.subtitlealign,
                 }).addClass(viz.config.subtitlefont);
