@@ -337,7 +337,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                primarycolor: "primarycolor",
 	                secondarycolor: "secondarycolor",
 	                value: "value",
-	                sparkline: "sparkline",
+	                sparkline: "overtimedata",
 	                title: "title",
 	                text: "text",
 	                subtitle: "subtitle",
@@ -377,7 +377,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        id: i,
 	                        overtimedata: [],
 	                        title: "",
-	                        value: "",
+	                        value: null,
 	                    };
 	                    // viz.item array will exist if this is an already created item
 	                    if (viz.item.length > i) {
@@ -388,14 +388,12 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    currentRow = viz.data.rows[i];
 	                    if (viz.datamode === 2) {
 	                        item.overtimedata = currentRow[0].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                    } else if (viz.datamode === 3) {
 	                        item.overtimedata = currentRow[0].slice(1);
 	                        item.value = currentRow[1];
 	                    } else if (viz.datamode === 4) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                    } else if (viz.datamode === 5) {
 	                        item.title = currentRow[0];
 	                        item.overtimedata = currentRow[1].slice(1);
@@ -409,14 +407,24 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        item.value = currentRow[1];
 	                    } else if (viz.datamode === 8) {
 	                        item.overtimedata = currentRow[0].slice(1);
-	                        item.value = item.overtimedata[item.overtimedata.length - 1];
 	                    } else if (viz.datamode === 9) {
 	                        item.value = currentRow[0];
 	                    }
 	                    // overrides are columns in the data with specific names
 	                    for (var k = 0; k < viz.data.fields.length; k++) {
 	                        if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
-	                            item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
+	                            if (viz.data.fields[k].name === "sparkline") {
+	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k].slice(1);
+	                            } else {
+	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
+	                            }
+	                        }
+	                    }
+	                    if (item.value === null) {
+	                        if (item.overtimedata.length) {
+	                            item.value = item.overtimedata[item.overtimedata.length - 1];
+	                        } else {
+	                            item.value = "";
 	                        }
 	                    }
 	                }
