@@ -164,6 +164,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                spinnerspeedmin: "15",
 	                spinnerspeedmax: "1",
 
+	                pathviewbox: "0 0 100 100",
+	                path: "M0 10 L100 10",
+	                pathwidth: "3",
+	                pathjoin: "round",
+	                pathshape: "round",
+	                pathantsize: "1",
+	                pathantgap: "8",
+	                pathspeedmin: "1",
+	                pathspeedmax: "20",
+
 	                shapetexture: "solid",
 	                shapeshadow: "yes",
 	                shapedropcolor: "#ffffff",
@@ -197,6 +207,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                },
 	                a3: {mainHeight:  0.5},
 	                a4: {mainHeight:  0.5},
+	                path: {mainHeight:  1, mainWidth: 1},
 	            };
 	            // Override defaults with selected items from the UI
 	            for (var opt in config) {
@@ -212,8 +223,13 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    }
 	                }
 	            }
-	            viz.config.spinnerspeedmin = Number(viz.config.spinnerspeedmin);
-	            viz.config.spinnerspeedmax = Number(viz.config.spinnerspeedmax);
+	            if (viz.config.style === "path") {
+	                viz.speedmin = Number(viz.config.pathspeedmin);
+	                viz.speedmax = Number(viz.config.pathspeedmax);
+	            } else {
+	                viz.speedmin = Number(viz.config.spinnerspeedmin);
+	                viz.speedmax = Number(viz.config.spinnerspeedmax);
+	            }
 	            viz.data = data;
 	            viz.scheduleDraw();
 
@@ -752,6 +768,22 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                        '</g>'+
 	                        '</svg>').appendTo(item.$wrapc2);
 
+	                    } else if (viz.config.style === "path") {
+	                        var antsize = Number(viz.config.pathantsize);
+	                        var antgap = Number(viz.config.pathantgap);
+	                        if (viz.config.pathshape === "round") {
+	                            antsize = Math.max(0, antsize - Number(viz.config.pathwidth));
+	                            antgap = antgap + Number(viz.config.pathwidth);
+	                        }
+	                        var dashoffset = (antsize + antgap);
+	                        item.$svg = $('<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="' + viz.config.pathviewbox + '" preserveAspectRatio="xMidYMid">'+
+	                        '<path d="' + viz.config.path + '" class="number_display_viz-stroke_secondary" fill="none" stroke-width="' + viz.config.pathwidth + '" stroke-linecap="' + viz.config.pathshape + '" stroke-linejoin="' + viz.config.pathjoin + '" />'+
+	                        '<path d="' + viz.config.path + '" class="number_display_viz-stroke_primary" fill="none" stroke-width="' + viz.config.pathwidth + '"  stroke-linecap="' + viz.config.pathshape + '" stroke-linejoin="' + viz.config.pathjoin + '"'+
+	                        ' stroke-dashoffset="' + dashoffset + '" stroke-dasharray="' + antsize + ' ' + antgap + '">'+
+	                        '<animate attributeName="stroke-dashoffset" dur="1s" class="number_display_viz-speed_1x" repeatCount="indefinite" keyTimes="0;1" values="' + dashoffset + ';0" />'+
+	                        '</path>'+
+	                        '</svg>').appendTo(item.$wrapc2);
+
 	                    } else if (viz.config.style === "a1") { // square
 	                        item.svgViewbox = "0 0 100 100";
 	                        item.svgString = '<rect x="5" y="5" width="90" height="90" class="number_display_viz-shape" />';
@@ -1226,7 +1258,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                // Calculate the speed of the viz
 	                var speed = "9999999";
 	                if (! value_nodata) {
-	                    speed = (value_as_percentage * (viz.config.spinnerspeedmax - viz.config.spinnerspeedmin)) + viz.config.spinnerspeedmin;
+	                    speed = (value_as_percentage * (viz.speedmax - viz.speedmin)) + viz.speedmin;
 	                    speed = (speed === 0) ? 9999999 : 60 / speed;
 	                }
 	                item.$svgFillPrimary.attr("fill", value_color_primary);

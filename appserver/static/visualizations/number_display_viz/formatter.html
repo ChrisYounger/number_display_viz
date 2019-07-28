@@ -30,6 +30,7 @@
                         <option value="a11">Shape - hexagon 4</option>
                         <option value="a12">Fill 1</option>
                         <option value="a13">Fill 2</option>
+                        <option value="path">Path</option>
                         <option value="nil">Blank (just text)</option>
                 </splunk-select>
         </splunk-control-group>
@@ -744,13 +745,11 @@
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.thresholdsize" value="20" style="width: 32px; vertical-align:top; display:inline-block; flex: none; margin-right: 4px;"></splunk-text-input>
                 <span style="display:inline-block; margin:5px 15px 5px 5px;">%</span>
         </splunk-control-group>
-
-
 </form>
 
 
+
 <form class="splunk-formatter-section" section-label="Spinners">
-        </splunk-control-group>
         <splunk-control-group label="RPM when min">
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmin" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
         </splunk-control-group>
@@ -758,6 +757,45 @@
                 <splunk-text-input name="{{VIZ_NAMESPACE}}.spinnerspeedmax" value="20" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
         </splunk-control-group>
 </form>
+
+
+
+<form class="splunk-formatter-section" section-label="Path">
+        <splunk-control-group label="SVG Viewbox">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathviewbox" value="0 0 100 100"></splunk-text-input>
+        </splunk-control-group>
+        <splunk-control-group label="SVG Path">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.path" value="M0 10 L100 10"></splunk-text-input>
+        </splunk-control-group>
+        <splunk-control-group label="Ant shape">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.pathshape" value="round">
+                        <option value="butt">Square</option>
+                        <option value="round">Rounded</option>
+                </splunk-radio-input>
+        </splunk-control-group>
+        <splunk-control-group label="Thickness">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathwidth" value="3" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        </splunk-control-group>
+        <!-- <splunk-control-group label="Line join">
+                <splunk-radio-input name="{{VIZ_NAMESPACE}}.pathjoin" value="round">
+                        <option value="square">Square</option>
+                        <option value="round">Rounded</option>
+                </splunk-radio-input>
+        </splunk-control-group> -->
+        <splunk-control-group label="Ant size">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathantsize" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        </splunk-control-group>
+        <splunk-control-group label="Ant spacing">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathantgap" value="8" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        </splunk-control-group>
+        <splunk-control-group label="Speed when min">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathspeedmin" value="1" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        </splunk-control-group>
+        <splunk-control-group label="Speed when max">
+                <splunk-text-input name="{{VIZ_NAMESPACE}}.pathspeedmax" value="20" style="width:64px; vertical-align:top; display:inline-block; flex:none; margin-right:4px;"></splunk-text-input>
+        </splunk-control-group>
+</form>
+
 
 
 <form class="splunk-formatter-section" section-label="Shapes">
