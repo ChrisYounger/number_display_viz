@@ -430,7 +430,11 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                    for (var k = 0; k < viz.data.fields.length; k++) {
 	                        if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
 	                            if (viz.data.fields[k].name === "sparkline") {
-	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k].slice(1);
+	                                if (Array.isArray(currentRow[k]) && currentRow[k][0] === "##__SPARKLINE__##") {
+	                                    item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k].slice(1);
+	                                } else {
+	                                    item[allowedOverrides[viz.data.fields[k].name]] = [];
+	                                }
 	                            } else {
 	                                item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
 	                            }
