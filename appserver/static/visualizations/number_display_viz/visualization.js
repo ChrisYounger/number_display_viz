@@ -1312,10 +1312,18 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                // Animate number on change
 	                // Need to have a previous value and both old and new need to be numbers for animation to work
 	                } else if (! isNaN(overlay_prev) && ! isNaN(overlay_now) && overlay_prev !== overlay_now && viz.config.textprecision !== "nolimit") {
+	                    val.textanimateidx = 0;
+	                    // TODO should add a delay option  
 	                    $({value: overlay_prev, target: item.$overlayText}).animate({value: overlay_now}, {
 	                        duration: Number(viz.config.textduration),
 	                        easing: "swing",
 	                        step: function(val, fx) {
+	                            val.textanimateidx++;
+	                            if (val.textanimateidx % 30 === 0) {
+	                                this.target.html(viz.buildOverlay(val));
+	                            }
+	                        },
+	                        complete: function(){
 	                            this.target.html(viz.buildOverlay(val));
 	                        }
 	                    });
