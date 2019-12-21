@@ -1130,10 +1130,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 
 	            for (i = 2; i < 7; i++){
 	                if (viz.config["thresholdval" + i] !== "" && ! isNaN(Number(viz.config["thresholdval" + i]))) {
-	                    var val = Number(viz.config["thresholdval" + i]);
+	                    var thresholdval = Number(viz.config["thresholdval" + i]);
 	                    thresholds_arr.push({
 	                        color: viz.config["thresholdcol" + i], 
-	                        value: val
+	                        value: thresholdval
 	                    });
 	                }
 	            }
@@ -1312,19 +1312,19 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                // Animate number on change
 	                // Need to have a previous value and both old and new need to be numbers for animation to work
 	                } else if (! isNaN(overlay_prev) && ! isNaN(overlay_now) && overlay_prev !== overlay_now && viz.config.textprecision !== "nolimit") {
-	                    val.textanimateidx = 0;
 	                    // TODO should add a delay option  
-	                    $({value: overlay_prev, target: item.$overlayText}).animate({value: overlay_now}, {
+	                    $({value: overlay_prev, target: item.$overlayText, textanimateidx: 0}).animate({value: overlay_now}, {
 	                        duration: Number(viz.config.textduration),
 	                        easing: "swing",
 	                        step: function(val, fx) {
-	                            val.textanimateidx++;
-	                            if (val.textanimateidx % 30 === 0) {
+	                            // TODO probably need to add this back at some point
+	                            //this.textanimateidx++;
+	                            //if (this.textanimateidx % 30 === 0) {
 	                                this.target.html(viz.buildOverlay(val));
-	                            }
+	                            //}
 	                        },
 	                        complete: function(){
-	                            this.target.html(viz.buildOverlay(val));
+	                            this.target.html(viz.buildOverlay(overlay_now));
 	                        }
 	                    });
 	                } else if (! isNaN(overlay_now)) {
