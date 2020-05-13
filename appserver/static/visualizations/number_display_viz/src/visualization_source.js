@@ -358,26 +358,26 @@ function(
                     }
                     currentRow = viz.data.rows[i];
                     if (viz.datamode === 2) {
-                        item.overtimedata = currentRow[0].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[0]);
                     } else if (viz.datamode === 3) {
-                        item.overtimedata = currentRow[0].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[0]);
                         item.value = currentRow[1];
                     } else if (viz.datamode === 4) {
                         item.title = currentRow[0];
-                        item.overtimedata = currentRow[1].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[1]);
                     } else if (viz.datamode === 5) {
                         item.title = currentRow[0];
-                        item.overtimedata = currentRow[1].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[1]);
                         item.value = currentRow[2];
                     } else if (viz.datamode === 6) {
                         item.title = currentRow[0];
                         item.value = currentRow[1];
-                        item.overtimedata = currentRow[2].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[2]);
                     } else if (viz.datamode === 7) {
                         item.title = currentRow[0];
                         item.value = currentRow[1];
                     } else if (viz.datamode === 8) {
-                        item.overtimedata = currentRow[0].slice(1);
+                        item.overtimedata = viz.getSparkline(currentRow[0]);
                     } else if (viz.datamode === 9) {
                         item.value = currentRow[0];
                     }
@@ -385,11 +385,7 @@ function(
                     for (var k = 0; k < viz.data.fields.length; k++) {
                         if (allowedOverrides.hasOwnProperty(viz.data.fields[k].name)) {
                             if (viz.data.fields[k].name === "sparkline") {
-                                if (Array.isArray(currentRow[k]) && currentRow[k][0] === "##__SPARKLINE__##") {
-                                    item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k].slice(1);
-                                } else {
-                                    item[allowedOverrides[viz.data.fields[k].name]] = [];
-                                }
+                                item[allowedOverrides[viz.data.fields[k].name]] = viz.getSparkline(currentRow[k]);
                             } else {
                                 item[allowedOverrides[viz.data.fields[k].name]] = currentRow[k];
                             }
@@ -487,6 +483,17 @@ function(
             }
         },
 
+        getSparkline: function(obj){
+            if (Array.isArray(obj)) {
+                if (obj[0] === "##__SPARKLINE__##") {
+                    return obj.slice(1);
+                } else {
+                    return obj;
+                }
+            }
+            return [];
+        },
+
         sanitise: function(val) {
             return val.toString().replace(/\W+/g, "_");
         },
@@ -549,7 +556,7 @@ function(
                                 }
                             }
                         }
-                         viz.drilldown({
+                        viz.drilldown({
                             action: SplunkVisualizationBase.FIELD_VALUE_DRILLDOWN,
                             data: data
                         }, browserEvent);
