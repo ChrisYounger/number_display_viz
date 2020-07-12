@@ -314,6 +314,18 @@ function(
                 subtitle: "subtitle",
                 min: "min",
                 max: "max",
+                thresholdcolor1: "thresholdcol1",
+                thresholdcolor2: "thresholdcol2",
+                thresholdcolor3: "thresholdcol3",
+                thresholdcolor4: "thresholdcol4",
+                thresholdcolor5: "thresholdcol5",
+                thresholdcolor6: "thresholdcol6",
+                thresholdvalue1: "thresholdval1",
+                thresholdvalue2: "thresholdval2",
+                thresholdvalue3: "thresholdval3",
+                thresholdvalue4: "thresholdval4",
+                thresholdvalue5: "thresholdval5",
+                thresholdvalue6: "thresholdval6",
             };
 
             // viz.datamode = 1 is "|timechart" data. it doesnt allow for overrides
@@ -501,11 +513,27 @@ function(
         doDrawItem: function(item, doAFullRedraw){
             var viz = this;
             var i, vbmultipler;
-            if (! item.hasOwnProperty("min")) {
-                item.min = viz.config.min;
-            }
-            if (! item.hasOwnProperty("max")) {
-                item.max = viz.config.max;
+
+            var overridable_properties = [
+                "min",
+                "max",
+                "thresholdcol1",
+                "thresholdcol2",
+                "thresholdcol3",
+                "thresholdcol4",
+                "thresholdcol5",
+                "thresholdcol6",
+                "thresholdval1",
+                "thresholdval2",
+                "thresholdval3",
+                "thresholdval4",
+                "thresholdval5",
+                "thresholdval6",
+            ];
+            for (i = 0; i < overridable_properties.length; i++) {
+                if (! item.hasOwnProperty(overridable_properties[i])) {
+                    item[overridable_properties[i]] = viz.config[overridable_properties[i]];
+                }
             }
             item.min = Number(item.min);
             item.max = Number(item.max);
@@ -1086,15 +1114,15 @@ item.svgGradient = "<defs><pattern id='" + item.svgTextureId + "' patternUnits='
             var threshold_colors = [];
             var threshold_values = [];
             var thresholds_arr = [{
-                color: viz.config.thresholdcol1, 
+                color: item.thresholdcol1, 
                 value: -Infinity
             }];
 
             for (i = 2; i < 7; i++){
-                if (viz.config["thresholdval" + i] !== "" && ! isNaN(Number(viz.config["thresholdval" + i]))) {
-                    var thresholdval = Number(viz.config["thresholdval" + i]);
+                if (item["thresholdval" + i] !== "" && ! isNaN(Number(item["thresholdval" + i]))) {
+                    var thresholdval = Number(item["thresholdval" + i]);
                     thresholds_arr.push({
-                        color: viz.config["thresholdcol" + i], 
+                        color: item["thresholdcol" + i], 
                         value: thresholdval
                     });
                 }

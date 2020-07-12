@@ -176,6 +176,20 @@
 <td>Number</td>
 <td>Overrides the "max" limit</td>
 </tr>
+<tr>
+<td>
+                  <code>thresholdvalue1</code>..<code>6</code>
+                </td>
+<td>Number</td>
+<td>Overrides the specified threshold value</td>
+</tr>
+<tr>
+<td>
+                  <code>thresholdcolor1</code>..<code>6</code>
+                </td>
+<td>HTML color code</td>
+<td>Overrides the specified threshold color</td>
+</tr>
 </tbody>
 </table>
 <br/>
