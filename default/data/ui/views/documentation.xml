@@ -1,4 +1,4 @@
-<form theme="light">
+<form theme="light" hideAppBar="true">
   <label>Number Display Viz - Documentation</label>
   <search id="base1">
     <query>index=_internal | stats sparkline(sum(count)) as overtime| eval text="42"</query>
@@ -62,9 +62,8 @@
 <div style="max-width: 1200px; margin: 0 auto;">
 <h2>Number Display Viz</h2>
 <p>A collection of ultra-configurable, single-statistic vizualisations for Splunk.</p>
-<p>Copyright (C) 2018 Chris Younger I am a Splunk Professional Services consultant working for JDS Australia, in Brisbane Australia.</p>
 <p>
-            <a href="https://github.com/ChrisYounger/number_display_viz">Source code</a> | <a href="https://splunkbase.splunk.com/app/4537/">Splunkbase</a> | <a href="https://answers.splunk.com/app/questions/4537.html">Questions, Bugs or Suggestions</a> | <a href="https://splunkbase.splunk.com/apps/#/author/chrisyoungerjds">My Splunk apps</a>
+Copyright (C) 2020 Chris Younger | <a href="https://github.com/ChrisYounger/number_display_viz">Source code</a> | <a href="https://splunkbase.splunk.com/app/4537/">Splunkbase</a> | <a href="https://answers.splunk.com/app/questions/4537.html">Questions, Bugs or Suggestions</a> | <a href="https://splunkbase.splunk.com/apps/#/author/chrisyoungerjds">My Splunk apps</a>
           </p>
 <br/>
 <br/>
