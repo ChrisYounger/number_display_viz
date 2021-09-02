@@ -1,4 +1,4 @@
-<form theme="light" hideAppBar="true">
+<form version="1.1" theme="light" hideAppBar="true">
   <label>Number Display Viz - Documentation</label>
   <search id="base1">
     <query>| gentimes start=-30 end=0 increment=12h | rename starttime as _time | fields + _time | eval myValue=random()%500 | stats sparkline(avg(myValue)) as overtime| eval text="42"</query>
