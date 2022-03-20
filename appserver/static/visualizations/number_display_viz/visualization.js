@@ -1101,7 +1101,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                if (viz.config.sparkorder !== "no") {
 	                    item.ctx1 = item.$canvas1[0].getContext('2d');
 	                    item.areaCfg = {
-	                        type: viz.config.sparkstyle == "column" ? "bar" : "line",
+	                        type: viz.config.sparkstyle == "column" || viz.config.sparkstyle == "status" ? "bar" : "line",
 	                        data: {
 	                            datasets: [],
 	                            labels: []
@@ -1115,17 +1115,14 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                                display: false,
 	                            },
 	                            tooltips: {
+	                                enabled: false,
+	                                custom: function(c){ viz.tooltip(c, this); },
 	                                mode: 'index',
-	                                intersect: false,
-	                                callbacks: {
-	                                    label: function(tooltipItem, data) {
-	                                        return "";
-	                                    }
-	                                }
+	                                intersect: false
 	                            },
 	                            hover: {
-	                                mode: 'nearest',
-	                                intersect: true
+	                                mode: 'index',
+	                                intersect: false
 	                            },
 	                            animation: {
 	                                duration: 0,
@@ -1147,11 +1144,16 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                            }
 	                        }
 	                    };
-	                    if ($.trim(viz.config.sparkmax) !== "" && ! isNaN(Number(viz.config.sparkmax))) {
-	                        item.areaCfg.options.scales.yAxes[0].ticks.max = Number(viz.config.sparkmax);
-	                    }
-	                    if ($.trim(viz.config.sparkmin) !== "" && ! isNaN(Number(viz.config.sparkmin))) {
-	                        item.areaCfg.options.scales.yAxes[0].ticks.min = Number(viz.config.sparkmin);
+	                    if (viz.config.sparkstyle == "status") {
+	                        item.areaCfg.options.scales.yAxes[0].ticks.min = 0;
+	                        item.areaCfg.options.scales.yAxes[0].ticks.max = 1;
+	                    } else {
+	                        if ($.trim(viz.config.sparkmax) !== "" && ! isNaN(Number(viz.config.sparkmax))) {
+	                            item.areaCfg.options.scales.yAxes[0].ticks.max = Number(viz.config.sparkmax);
+	                        }
+	                        if ($.trim(viz.config.sparkmin) !== "" && ! isNaN(Number(viz.config.sparkmin))) {
+	                            item.areaCfg.options.scales.yAxes[0].ticks.min = Number(viz.config.sparkmin);
+	                        }
 	                    }
 	                    item.myArea = new Chart(item.ctx1, item.areaCfg);
 	                }
@@ -1315,26 +1317,47 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            
 	            if (viz.config.sparkorder !== "no") {
+	            
 	                item.areaCfg.data.labels = item.overtimedata;
 	                if (item.areaCfg.data.datasets.length === 0) {
 	                    item.areaCfg.data.datasets.push({});
 	                }
 	                item.areaCfg.data.datasets[0].label = "";
-	                item.areaCfg.data.datasets[0].borderColor = viz.getColorFromMode(viz.config.sparkcolormodeline, viz.config.sparkcolorline, value_color);
-	                item.areaCfg.data.datasets[0].backgroundColor = viz.getColorFromMode(viz.config.sparkcolormodefill, viz.config.sparkcolorfill, value_color);
-	                item.areaCfg.data.datasets[0].pointBorderColor = item.areaCfg.data.datasets[0].borderColor;
-	                item.areaCfg.data.datasets[0].pointBackgroundColor = item.areaCfg.data.datasets[0].borderColor;
-	                item.areaCfg.data.datasets[0].pointRadius = 1;
-	                if (viz.config.sparknulls === "zero") {
+	                if (viz.config.sparkstyle == "status") {
 	                    item.areaCfg.data.datasets[0].data = [];
+	                    item.areaCfg.data.datasets[0].backgroundColor = [];
 	                    for (var m = 0; m < item.overtimedata.length; m++) {
-	                        item.areaCfg.data.datasets[0].data.push(item.overtimedata[m] === null ? 0 : item.overtimedata[m]);
+	                        item.areaCfg.data.datasets[0].data.push(1);
+	                        if (item.overtimedata[m] >= 6) {
+	                            item.areaCfg.data.datasets[0].backgroundColor.push("#b22b32");
+	                        } else if (item.overtimedata[m] >= 4) {
+	                            item.areaCfg.data.datasets[0].backgroundColor.push("#d16f18");
+	                        } else if (item.overtimedata[m] >= 2) {
+	                            item.areaCfg.data.datasets[0].backgroundColor.push("#1a9035");
+	                        } else if (item.overtimedata[m] >= 0) {
+	                            item.areaCfg.data.datasets[0].backgroundColor.push("#009DD9");
+	                        } else  {
+	                            item.areaCfg.data.datasets[0].backgroundColor.push("#708794");
+	                        }
 	                    }
 	                } else {
-	                    item.areaCfg.data.datasets[0].data = item.overtimedata;
+	                    item.areaCfg.data.datasets[0].borderColor = viz.getColorFromMode(viz.config.sparkcolormodeline, viz.config.sparkcolorline, value_color);
+	                    item.areaCfg.data.datasets[0].backgroundColor = viz.getColorFromMode(viz.config.sparkcolormodefill, viz.config.sparkcolorfill, value_color);
+	                    item.areaCfg.data.datasets[0].pointBorderColor = item.areaCfg.data.datasets[0].borderColor;
+	                    item.areaCfg.data.datasets[0].pointBackgroundColor = item.areaCfg.data.datasets[0].borderColor;
+	                    item.areaCfg.data.datasets[0].pointRadius = 1;
+	                    if (viz.config.sparknulls === "zero") {
+	                        item.areaCfg.data.datasets[0].data = [];
+	                        for (var m = 0; m < item.overtimedata.length; m++) {
+	                            item.areaCfg.data.datasets[0].data.push(item.overtimedata[m] === null ? 0 : item.overtimedata[m]);
+	                        }
+	                    } else {
+	                        item.areaCfg.data.datasets[0].data = item.overtimedata;
+	                    }
+	                    item.areaCfg.data.datasets[0].fill = viz.config.sparkstyle == "area" ? 'origin' : false;
+	                    item.areaCfg.data.datasets[0].spanGaps = (viz.config.sparknulls === "span");
 	                }
-	                item.areaCfg.data.datasets[0].fill = viz.config.sparkstyle == "area" ? 'origin' : false;
-	                item.areaCfg.data.datasets[0].spanGaps = (viz.config.sparknulls === "span");
+	            
 	            }
 	            // in-data override
 	            if (item.hasOwnProperty("text")) {
@@ -1477,6 +1500,50 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                return color1;
 	            }
 	            return color2;
+	        },
+
+	        tooltip: function(tooltipModel, chart) {
+	            var viz = this;
+	            var tooltipEl = $('.number_display_viz-tooltip');
+	            // Create element on first render
+	            if (tooltipEl.length === 0) {
+	                tooltipEl = $('<div class="number_display_viz-tooltip"></div>').appendTo("body");
+	            }
+	        // Hide if no tooltip
+	            if (tooltipModel.opacity === 0 || ! tooltipModel.body) {
+	                tooltipEl.css("opacity","");
+	                return;
+	            }
+	            if (viz.config.sparkstyle == "status") {
+	                if (tooltipModel.dataPoints[0].label >= 6) {
+	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Error");
+	                } else if (tooltipModel.dataPoints[0].label >= 4) {
+	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Warning");
+	                } else if (tooltipModel.dataPoints[0].label >= 2) {
+	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Good");
+	                } else if (tooltipModel.dataPoints[0].label >= 0) {
+	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Informational");
+	                } else  {
+	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Unknown");
+	                }
+	            } else {
+	                // if would be ideal if we could show the time for the element, however sparklines do not have a cocnept of time
+	                tooltipEl.text(/* tooltipModel.dataPoints[0].index + ": " + */ tooltipModel.dataPoints[0].value);
+	            }
+	            var position = chart._chart.canvas.getBoundingClientRect();
+	            var styles = {
+	                opacity: 1,
+	                top: (position.top + window.pageYOffset + tooltipModel.caretY) + 'px'
+	            };
+	            var h_offset = position.left + window.pageXOffset + tooltipModel.caretX;
+	            if (h_offset > (window.innerWidth * 0.8)) {
+	                styles.right = window.innerWidth - h_offset + 30;
+	                styles.left = "";
+	            } else {
+	                styles.left = h_offset + 30;
+	                styles.right = "";
+	            }
+	            tooltipEl.css(styles)
 	        },
 
 	        // Override to respond to re-sizing events
