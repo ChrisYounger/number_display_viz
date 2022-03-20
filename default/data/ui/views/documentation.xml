@@ -209,8 +209,8 @@ Copyright (C) 2020 Chris Younger | <a href="https://github.com/ChrisYounger/numb
 <p>The primary and secondary fields are the colors that are used by the main style component such as the gauge, spinner, or the shape color. This allows the color to be set to a static color and the threshold color to be used for the textvalue overlay, the sparkline or other places. Exactly what the primary or secondary color affects is different for each style, however it is typically a gradient range. If the Primary and Secondary color are set exactly the same then some of the shape textures will not be visible. </p>
 </li>
 <li>
-<p>To show a sparkline, then be sure to pass in sparkline data. use <code>| stats sparkline(AGG_FUNCTION(VALUE))</code>
-              </p>
+<p>To show a sparkline, then be sure to pass in sparkline data. use <code>| stats sparkline(AGG_FUNCTION(VALUE))</code></p>
+<p>There is a special sparkline mode called "Status". When this is selected you should pass in sparkline field that contains values that map to statuses: &gt;= 6 (Error) &gt;= 4 (Warning) &gt;= 2 (Good) &gt;= 0 (Informational) &lt; 0 (Unknown) -  This is the compatable with the internal codes used by ITSI.</p>
 </li>
 <li>
 <p>The Text, Title, Subtitle tabs allow for configuring how text overlays are applied. They are all kind of the same except the text value can have animations on change, and a unit prefix/suffix.</p>
