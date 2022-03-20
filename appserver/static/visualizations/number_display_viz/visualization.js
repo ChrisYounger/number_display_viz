@@ -373,6 +373,10 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                thresholdvalue4: "thresholdval4",
 	                thresholdvalue5: "thresholdval5",
 	                thresholdvalue6: "thresholdval6",
+	                info_min_time: "info_min_time",
+	                info_max_time: "info_max_time",
+	                info_search_time: "info_search_time",
+	                info_sid: "info_sid",
 	            };
 
 	            // viz.datamode = 1 is "|timechart" data. it doesnt allow for overrides
@@ -1317,8 +1321,45 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	            }
 	            
 	            if (viz.config.sparkorder !== "no") {
-	            
-	                item.areaCfg.data.labels = item.overtimedata;
+	                var block = null;
+	                if (item.hasOwnProperty("info_min_time") && item.hasOwnProperty("info_max_time")) {
+	                    var diff = item.info_max_time - item.info_min_time;
+	                    //console.log("if exact, each block is " + (diff / item.overtimedata.length), "seconds. divides nicely= ", !!((diff / item.overtimedata.length) % 10 == 0));
+	                    //console.log("if one block extra, each block is " + (diff / (item.overtimedata.length - 1)), "seconds. divides nicely= ", !!((diff / (item.overtimedata.length - 1)) % 10 == 0));
+	                    block = (diff / item.overtimedata.length);
+	                    if (block % 10 != 0) { // if not divides evenly into 10 seconds
+	                        block = (diff / item.overtimedata.length - 1);
+	                        if (block % 10 != 0) { // if not divides evenly into 10 seconds
+	                            block = null;
+	                        }
+	                    }
+	                }
+	                item.areaCfg.data.labels = [];
+	                var tme_start = Math.floor((+item.info_min_time) / block) * block;
+	                for (var m = 0; m < item.overtimedata.length; m++) {
+	                    var tme = "";
+	                    if (block !== null) {
+	                        var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+	                        d.setUTCSeconds((block * m + tme_start));
+	                        tme = d.toLocaleString() + " = ";
+	                    }
+	                    if (viz.config.sparkstyle == "status") {
+	                        if (item.overtimedata[m] >= 6) {
+	                            item.areaCfg.data.labels.push(tme + "Error");
+	                        } else if (item.overtimedata[m] >= 4) {
+	                            item.areaCfg.data.labels.push(tme + "Warning");
+	                        } else if (item.overtimedata[m] >= 2) {
+	                            item.areaCfg.data.labels.push(tme + "Good");
+	                        } else if (item.overtimedata[m] >= 0) {
+	                            item.areaCfg.data.labels.push(tme + "Informational");
+	                        } else  {
+	                            item.areaCfg.data.labels.push(tme + "Unknown");
+	                        }
+	                    } else {
+	                        item.areaCfg.data.labels.push(tme + item.overtimedata[m]);
+	                    }
+	                }
+
 	                if (item.areaCfg.data.datasets.length === 0) {
 	                    item.areaCfg.data.datasets.push({});
 	                }
@@ -1514,22 +1555,7 @@ define(["api/SplunkVisualizationBase","api/SplunkVisualizationUtils"], function(
 	                tooltipEl.css("opacity","");
 	                return;
 	            }
-	            if (viz.config.sparkstyle == "status") {
-	                if (tooltipModel.dataPoints[0].label >= 6) {
-	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Error");
-	                } else if (tooltipModel.dataPoints[0].label >= 4) {
-	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Warning");
-	                } else if (tooltipModel.dataPoints[0].label >= 2) {
-	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Good");
-	                } else if (tooltipModel.dataPoints[0].label >= 0) {
-	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Informational");
-	                } else  {
-	                    tooltipEl.text(/* tooltipModel.dataPoints[0].label + ": " +*/ "Unknown");
-	                }
-	            } else {
-	                // if would be ideal if we could show the time for the element, however sparklines do not have a cocnept of time
-	                tooltipEl.text(/* tooltipModel.dataPoints[0].index + ": " + */ tooltipModel.dataPoints[0].value);
-	            }
+	            tooltipEl.text(tooltipModel.dataPoints[0].label);
 	            var position = chart._chart.canvas.getBoundingClientRect();
 	            var styles = {
 	                opacity: 1,
